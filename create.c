@@ -16,26 +16,26 @@
 #include "bitrankw32int.h"
 #include "wt.h"
 
+#include "tgs.h"
+
 #define RANK_FACTOR 20
 
-struct tgs {
-	struct wt *log;
-	bitRankW32Int *map;
+// Print unsigned integer in binary format with spaces separating each byte.
+void print_binary(unsigned int num) {
+  int arr[32];
+  int i = 0;
+  while (i++ < 32 || num / 2 != 0) {
+    arr[i - 1] = num % 2;
+    num /= 2;
+  }
 
-	uint size_log;
-	uint size_map;
-	uint nodes;
-	uint changes;
-	uint maxtime;
-};
-
-void tgs_free(struct tgs *a) {
-	free_wt(a->log);
-	destroyBitRankW32Int(a->map);
-	free(a->log);
-	a->log = NULL;
-	a->map = NULL;
+  for (i = 31; i >= 0; i--) {
+    printf("%d", arr[i]);
+    if (i % 8 == 0)
+      printf(" ");
+  }
 }
+
 
 void adjlog_free(struct adjlog *a) {
 
@@ -48,12 +48,17 @@ void adjlog_free(struct adjlog *a) {
 
 void printadjlog(struct adjlog *a) {
 	uint i;
+
+
 	printf("Nodes: %u\n", a->nodes);
 	printf("Changes: %u\n", a->changes);
 	printf("Maxtime: %u\n", a->maxtime);
 	printf("Size: %u\n", a->size_log);
 
 	printf("map: %X\n", a->map[0]);
+	print_binary(a->map[0]);
+
+
 	for(i = 0; i < a->size_log; i++) printf(" %u", a->log[i]);
 
 
@@ -84,6 +89,51 @@ void printadjlog(struct adjlog *a) {
 	printf("\n");
 }
 
+
+void printtgs(struct tgs *a) {
+	uint i;
+
+
+	printf("Nodes: %u\n", a->nodes);
+	printf("Changes: %u\n", a->changes);
+	printf("Maxtime: %u\n", a->maxtime);
+	printf("Size: %u\n", a->size_log);
+
+	printf("map: %X\n", a->map->data[0]);
+	print_binary(a->map->data[0]);
+
+
+	for(i = 0; i < a->size_log; i++) printf(" %u", access_wt(a->log, i));
+
+
+	uint node = 0;
+	uint j;
+	uint curr;
+	for ( j = 0; j < a->size_map; j++) {
+//		printf("bitget %d\n",  bitget(a->map, i));
+		if ( isBitSet(a->map, j) == 1) {
+			//its a node
+			printf("\n%u: ", node);
+			node++;
+		}
+		else {
+		i = j-node;
+
+		curr = access_wt(a->log, i);
+		if ( curr < a->nodes) {
+			//its an edge
+			printf(" +%u", curr);
+		}
+		else {
+			//its time
+			printf(" *%u (%u)", curr - a->nodes, curr);
+		}
+	}
+
+	}
+
+	printf("\n");
+}
 
 void create( char *filename, struct adjlog *adjlog) {
 	uint nodes;
@@ -171,14 +221,17 @@ void create( char *filename, struct adjlog *adjlog) {
 
 void create_index(struct tgs *tgs, struct adjlog *adjlog) {
 	uint next_power;
+	tgs->nodes = adjlog->nodes;
+	tgs->changes = adjlog->changes;
+	tgs->maxtime = adjlog->maxtime;
 	
 	tgs->size_log = adjlog->size_log;
 	tgs->size_map = adjlog->size_map;
 	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
 	
-	
+	printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
-	next_power = (uint) log(adjlog->nodes + adjlog->maxtime)/log(2) + 1;
+	next_power = (uint) log2(tgs->nodes + tgs->maxtime) + 1;
 	next_power = (uint) 1 << next_power;
 	LOG("next power: %u\n", next_power);
  	INFO("Creating WT for log\n");
@@ -191,17 +244,24 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog) {
 int main( int argc, char *argv[]) {
 	struct adjlog tg;
 	struct tgs tgindex;
-	if (argc < 2) {
-		fprintf(stderr, "please put the input file\n");
+	if (argc < 3) {
+		fprintf(stderr, "%s <dataset> <outputfile>\n", argv[0]);
 		exit(-1);
 	}
 	
 	create(argv[1], &tg);
 	
 	
-	//printadjlog(&tg);
+	printadjlog(&tg);
 	
 	create_index(&tgindex, &tg);
+	
+	printtgs(&tgindex);
+
+	FILE *f;
+	f = fopen(argv[2], "w");
+	tgs_save(&tgindex, f);
+	fclose(f);
 	
 	adjlog_free(&tg);
 	tgs_free(&tgindex);
