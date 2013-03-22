@@ -6,6 +6,7 @@
  */
 
 #include <stdio.h>
+#include "arraysort.h"
 #include "tgs.h"
 
 int main(int argc, char *argv[]) {
