@@ -11,6 +11,8 @@
 #include "bitrankw32int.h"
 #include "wt.h"
 
+#define BUFFER 1024*1024
+
 struct tgs {
 	uint size_log;
 	uint size_map;
@@ -26,5 +28,17 @@ struct tgs {
 void tgs_save(struct tgs *a, FILE *f);
 void tgs_free(struct tgs *a);
 void tgs_load(struct tgs *a, FILE *f);
+
+
+inline uint start(bitRankW32Int *b, uint i) ;
+inline uint belong(bitRankW32Int *b, uint i);
+
+void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
+void get_neighbors_weak(uint *res, struct tgs *g, uint node, uint timestart, uint timeend);
+void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, uint timeend);
+
+void get_reverse_point(uint *res, struct tgs *g, uint node, uint time);
+void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te);
+void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te);
 
 #endif /* TGS_H_ */
