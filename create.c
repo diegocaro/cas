@@ -11,7 +11,6 @@
 #include <math.h>
 #include <sys/types.h> //uint
 #include "debug.h"
-#include "adjlog.h"
 #include "basic.h"
 #include "bitrankw32int.h"
 #include "wt.h"
@@ -19,6 +18,19 @@
 #include "tgs.h"
 
 #define RANK_FACTOR 20
+
+
+struct adjlog {
+	uint nodes;
+	uint changes;
+	uint maxtime;
+
+	uint *map; //position of nodes
+	uint size_map;
+
+	uint size_log; //size of the log
+	uint *log; //including time and edges
+};
 
 // Print unsigned integer in binary format with spaces separating each byte.
 void print_binary(unsigned int num) {
