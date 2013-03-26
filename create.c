@@ -21,9 +21,9 @@
 
 
 struct adjlog {
-	uint nodes;
-	uint changes;
-	uint maxtime;
+	uint nodes; //number of nodes from [0 ... nodes -1]
+	uint changes; //total number of changes
+	uint maxtime; //maximum time in the dataset from [0 ... maxtime-1]
 
 	uint *map; //position of nodes
 	uint size_map;
@@ -41,9 +41,9 @@ void print_binary(unsigned int num) {
     num /= 2;
   }
 
-  for (i = 31; i >= 0; i--) {
+  for (i = 0; i < 32; i++) {
     printf("%d", arr[i]);
-    if (i % 8 == 0)
+    if (i % 8 == 0 && i != 0)
       printf(" ");
   }
 }
@@ -68,15 +68,17 @@ void printadjlog(struct adjlog *a) {
 	printf("Size: %u\n", a->size_log);
 
 	printf("map: %X\n", a->map[0]);
-	print_binary(a->map[0]);
+	//print_binary(a->map[0]);
+	//for(i = 0; i < a->size_log; i++) printf(" %u", a->log[i]);
 
-
-	for(i = 0; i < a->size_log; i++) printf(" %u", a->log[i]);
-
-
+	printf("\n\n");
+	for(i = 0; i < 10; i++) printf(" %u", a->log[i]);
+	printf("\n\n");
 	uint node = 0;
 	uint j;
 	for ( j = 0; j < a->size_map; j++) {
+		if (j > 10) return;
+
 //		printf("bitget %d\n",  bitget(a->map, i));
 		if ( bitget(&a->map[0], j) == 1) {
 			//its a node
@@ -112,16 +114,18 @@ void printtgs(struct tgs *a) {
 	printf("Size: %u\n", a->size_log);
 
 	printf("map: %X\n", a->map->data[0]);
-	print_binary(a->map->data[0]);
+	//print_binary(a->map->data[0]);
+	//for(i = 0; i < a->size_log; i++) printf(" %u", access_wt(a->log, i));
 
-
-	for(i = 0; i < a->size_log; i++) printf(" %u", access_wt(a->log, i));
-
+	printf("\n\n");
+	for(i = 0; i < 10; i++) printf(" %u", access_wt(a->log, i));
+	printf("\n\n");
 
 	uint node = 0;
 	uint j;
 	uint curr;
 	for ( j = 0; j < a->size_map; j++) {
+		if (j > 10) return;
 //		printf("bitget %d\n",  bitget(a->map, i));
 		if ( isBitSet(a->map, j) == 1) {
 			//its a node
@@ -167,11 +171,12 @@ void create( char *filename, struct adjlog *adjlog) {
 	fscanf(f, "%u %u %u", &nodes, &changes, &maxtime);
 
 	
-	size_map = enteros(nodes+changes,1);
+	size_map = enteros(nodes+2*changes,1);;//(nodes+changes+32-1)/32;//enteros(nodes+changes,1);
 	map_nodes = (uint *) calloc( size_map, sizeof(uint));
 	
-	printf("you need %u integer for %u map_nodes\n", size_map, nodes+changes);
+	//printf("you need %u integer for %u map_nodes\n", size_map, nodes+2*changes);
 	
+
 	log = (uint *)malloc( sizeof(int) * (2*changes));
 	p = log;
 	
@@ -184,6 +189,9 @@ void create( char *filename, struct adjlog *adjlog) {
 			// if next change belongs from the previous node
 			if ( last_from +1 == from) {
 				// *p++ = nodes + from;
+				//printf("from %u\tlast_from %u\n", from, last_from);
+				//printf("setting %u bit (%u)\n", from + (p-log), nodes+2*changes);
+
 				bitset(map_nodes, from + (p-log));
 				// (p - log) are the current number of items in the adjacency log
 			}
@@ -204,6 +212,7 @@ void create( char *filename, struct adjlog *adjlog) {
 		}
 		
 		*p++ = to;
+		last_time = time;
 	}
 	
 	
@@ -211,13 +220,13 @@ void create( char *filename, struct adjlog *adjlog) {
 	
 	
 	size = p - log;
-	printf("p - log: %lu\n", p-log);
-	printf("log : %p", log);
+	//printf("p - log: %lu\n", p-log);
+	//printf("log : %p", log);
 	log =  realloc(log,  sizeof(uint) * size);
-	printf("log : %p", log);
+	//printf("log : %p", log);
 	
 	
-	map_nodes =  realloc(map_nodes, sizeof(uint) * enteros(size+nodes,1));
+	map_nodes = realloc(map_nodes, sizeof(uint) * enteros(size+nodes,1));
 
 	adjlog->nodes = nodes;
 	adjlog->changes = changes;
@@ -241,7 +250,7 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog) {
 	tgs->size_map = adjlog->size_map;
 	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
 	
-	printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
+	//printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
 	next_power = (uint) log2(tgs->nodes + tgs->maxtime) + 1;
 	next_power = (uint) 1 << next_power;

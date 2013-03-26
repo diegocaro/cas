@@ -2,8 +2,8 @@ DEPEN_WT=../wt/
 
 CC=gcc
 DEBUG = -g -DDEBUG
-CFLAGS=-c -O9 -Wall -I$(DEPEN_WT)
-LDFLAGS=-Wall -O9 -lm
+CFLAGS=-c -Wall -I$(DEPEN_WT) # -O9
+LDFLAGS=-Wall -lm
 
 EXT=
 
@@ -18,7 +18,7 @@ DEPENOBJS=$(addprefix $(DEPEN_WT), $(OBJS_WT))
 
 EXECUTABLE=create use benchmark
 
-all: CFLAGS += -O9
+#all: CFLAGS += -O9
 all: cleanobj wt $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
 
 debug: CC += $(DEBUG)

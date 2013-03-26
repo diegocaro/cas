@@ -14,7 +14,7 @@ int main(int argc, char *argv[]) {
 	FILE *f;
 	uint *buffer;
 	uint i, j;
-
+	uint a,b;
 
 	buffer = malloc(sizeof(uint)*BUFFER);
 
@@ -24,6 +24,15 @@ int main(int argc, char *argv[]) {
 	f = fopen(argv[1], "r");
 	tgs_load(&index, f);
 	fclose(f);
+/*
+	printf("Write your query: ");
+	while(scanf("%u %u", &a, &b)) {
+		get_neighbors_point(buffer, &index, a, b);
+		printf("t=%u -> ", 0);
+		print_arraysort(buffer);
+	}
+	return 0;
+*/
 
 	for ( i = 0; i < 5; i++) {
 		printf("start(%u): %u\n", i, start(index.map, i));
