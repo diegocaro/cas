@@ -41,4 +41,7 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time);
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te);
 void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te);
 
+
+void get_reverse_point_hack(uint *res, struct tgs *g, uint node, uint time);
+
 #endif /* TGS_H_ */

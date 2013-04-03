@@ -2,7 +2,7 @@ DEPEN_WT=../wt/
 
 CC=gcc
 DEBUG = -g -DDEBUG
-CFLAGS=-c -Wall -I$(DEPEN_WT) # -O9
+CFLAGS=-c -Wall -I$(DEPEN_WT) -O9
 LDFLAGS=-Wall -lm
 
 EXT=

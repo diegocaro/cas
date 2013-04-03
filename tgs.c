@@ -306,6 +306,82 @@ void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, u
 }
 
 
+void get_reverse_point_hack(uint *res, struct tgs *g, uint node, uint time) {
+	uint last_node, curr_node;
+	uint i, j;
+	uint cant, cpos;
+	uint startnode, endnode, endnode_log;
+	uint *buffer;
+
+	buffer = malloc(sizeof(uint)*BUFFER);
+
+	*buffer = 0;
+	wt_select_all(g->log, node, buffer);
+
+	last_node = UINT_MAX;
+
+	j = 0;
+	uint cosa;
+	for (i = 1; i <= *buffer; i++) {
+		curr_node = belong(g->map, buffer[i]);
+
+#ifdef DEBUG
+		printf("curr_node: %u\n", curr_node);
+#endif
+
+		if ( curr_node != last_node ) {
+			startnode = start(g->map, curr_node);
+			//printf("startnode: %u\nbuffer[i]: %u\n", startnode,buffer[i]-1);
+			//startnode = buffer[i];
+			endnode = start(g->map, curr_node + 1);
+
+			endnode_log = wt_next_value_pos(g->log, g->nodes + time + 1, startnode, endnode);
+			if (endnode_log < endnode) {
+				endnode = endnode_log;
+			}
+			//printf("startno: %u\n ", startnode);
+			//printf("endnode: %u\n",endnode);
+			//if(endnode<startnode) continue;
+
+#ifdef DEBUG
+			printf("startnode: %u\nendnode: %u\n", startnode, endnode);
+#endif
+			//cant = rank_wt(g->log, node, startnode);
+			//printf("%u %u\n",i-1, cant);
+			cant = i-1;
+
+
+			/*printf("startnodepos: %u\n ", startnode);
+			printf("buffer[%u]: %u\n ", i, buffer[i]);
+			printf("rank(%u, %u): %u\n", node, buffer[i], rank_wt(g->log, node, buffer[i]));
+			*/
+
+
+			//cpos = rank_wt(g->log, node, endnode);
+			//printf("cpos: %u\n", cpos);
+
+			while(buffer[i] < endnode && i <= *buffer) {
+				//printf("buffer[%u]=%u\n endnode: %u\n",i, buffer[i], endnode );
+				i++;
+			}
+			cpos = --i;
+			//printf("cosa: %u\n", cosa);
+
+			if ( (cpos - cant) % 2 == 1 ) {
+				res[++j] = curr_node;
+			}
+			//i--;
+		}
+		last_node = curr_node;
+	}
+	*res = j;
+
+	free(buffer);
+}
+
+
+
+
 void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 	uint last_node, curr_node;
 	uint i, j;
@@ -317,7 +393,7 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 
 	*buffer = 0;
 
-	pos_symbol(g->log, node, buffer);
+	wt_select_all(g->log, node, buffer);
 
 	last_node = UINT_MAX;
 
@@ -344,6 +420,8 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 			cant = rank_wt(g->log, node, startnode);
 			cpos = rank_wt(g->log, node, endnode);
 
+			//printf("cant: %u\ncpos: %u\n", cant,cpos);
+
 			if ( (cpos - cant) % 2 == 1 ) {
 				res[++j] = curr_node;
 			}
@@ -367,7 +445,7 @@ void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 
 	*buffer = 0;
 
-	pos_symbol(g->log, node, buffer);
+	wt_select_all(g->log, node, buffer);
 
 	last_node = UINT_MAX;
 
@@ -426,7 +504,7 @@ void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 
 	*buffer = 0;
 
-	pos_symbol(g->log, node, buffer);
+	wt_select_all(g->log, node, buffer);
 
 	last_node = UINT_MAX;
 
