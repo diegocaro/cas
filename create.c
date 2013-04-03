@@ -165,7 +165,7 @@ void create( char *filename, struct adjlog *adjlog) {
 	uint last_time, last_from;
 	
 	FILE *f;
-	
+	uint a=0,lines=0;
 	f = fopen(filename, "r");
 
 	fscanf(f, "%u %u %u", &nodes, &changes, &maxtime);
@@ -177,13 +177,17 @@ void create( char *filename, struct adjlog *adjlog) {
 	//printf("you need %u integer for %u map_nodes\n", size_map, nodes+2*changes);
 	
 
-	log = (uint *)malloc( sizeof(int) * (2*changes));
+	log = (uint *)malloc( sizeof(uint) * (2*changes+100));
+  printf("size of log: %u\n",2*changes);
 	p = log;
 	
 	last_time = UINT_MAX;
 	last_from = UINT_MAX;
 
-	while ( EOF != fscanf(f, "%u %u %u %u", &from, &to, &time, &op)) {
+	lines = 0;
+	uint pp;
+	while ( 4 == fscanf(f, "%u %u %u %u", &from, &to, &time, &op)) {
+		lines += 1;
 		if ( from != last_from) {
 			
 			// if next change belongs from the previous node
@@ -206,18 +210,19 @@ void create( char *filename, struct adjlog *adjlog) {
 			last_from = from;
 			last_time = UINT_MAX;
 		}
-		
+		//printf("%ld %u %u \n", p-log,2*changes, a);
 		if ( time != last_time) {
-			*p++ = nodes + time;
+			*p++ = nodes + time;a++;
 		}
-		
+
 		*p++ = to;
 		last_time = time;
+    
 	}
 	
-	
 	fclose(f);
-	
+
+	printf("lines read: %u\n", lines);
 	
 	size = p - log;
 	//printf("p - log: %lu\n", p-log);
