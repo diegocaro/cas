@@ -63,7 +63,7 @@ int main(int argc, char *argv[]) {
 
 	for ( i = 0; i < 5; i++) {
 		printf("Reverses of node %u\n", i);
-		for( j = 0; j <= index.maxtime; j++) {
+		for( j = 0; j <= 5; j++) {
 			get_reverse_point(buffer, &index, i, j);
 			printf("t=%u <- ", j);print_arraysort(buffer);
 		}

@@ -34,6 +34,7 @@ inline uint start(bitRankW32Int *b, uint i) ;
 inline uint belong(bitRankW32Int *b, uint i);
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
+void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic);
 void get_neighbors_weak(uint *res, struct tgs *g, uint node, uint timestart, uint timeend);
 void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, uint timeend);
 

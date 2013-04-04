@@ -189,8 +189,8 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 
 	*res = 0;
 	wt_range_report(g->log, startnode, endnode, 0, g->nodes ,res);
-	/*printf("res: ");print_arraysort(res);
-	*res = 0;
+	//printf("res: ");print_arraysort(res);
+	/* *res = 0;
 	count_symbols_range(g->log, startnode, endnode, res);
 	 */
 
@@ -207,59 +207,15 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 
 
 void get_neighbors_weak(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
-	uint startnode, endnode;
-	uint i, j;
-	uint pos_stime, pos_etime;
-	uint *buffer;
+	return get_neighbors_interval(res, g, node, timestart, timeend, 0);
+}
 
-	buffer = malloc(sizeof(uint)*BUFFER);
-
-	startnode = start(g->map, node);
-	endnode = start(g->map, node + 1);
-
-	pos_stime = wt_next_value_pos(g->log, g->nodes + timestart + 1, startnode, endnode);
-	if (pos_stime > endnode) {
-		pos_stime = endnode;
-	}
-
-	pos_etime = wt_next_value_pos(g->log, g->nodes + timeend + 1, startnode, endnode);
-	if (pos_etime > endnode) {
-		pos_etime = endnode;
-	}
-	//printf("stime: %u\netime: %u\n", pos_stime, pos_etime);
-	*res = 0;
-	wt_range_report(g->log, pos_stime, pos_etime, 0, g->nodes ,res);
-	//count_symbols_range(g->log, startnode, endnode, buffer2);
-
-#ifdef DEBUG
-	printf("wt_range_report: "); print_arraysort(res);
-#endif
-	//printf("wt_range_report: "); print_arraysort(buffer2);
-	j = 0;
-	for (i = 1; i <= *res; i += 2) {
-		res[++j] = res[i];
-	}
-	*res = j;
-
-	//printf("filtered: "); print_arraysort(res);
-	*buffer = 0;
-	get_neighbors_point(buffer, g, node, timestart);
-	//printf("direct neighbors: "); print_arraysort(buffer3);
-
-	j = *res;
-	for (i = 1; i <= *buffer; i++) {
-		res[++j] = buffer[i];
-	}
-	*res = j;
-
-	qsort(&res[1], *res, sizeof(unsigned int), compare);
-
-	remove_duplicates(res);
-	free(buffer);
+void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
+	return get_neighbors_interval(res, g, node, timestart, timeend, 1);
 }
 
 
-void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
+void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic) {
 	uint startnode, endnode;
 	uint i, j;
 	uint pos_stime, pos_etime;
@@ -298,12 +254,26 @@ void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, u
 
 	*res = 0;
 	get_neighbors_point(res, g, node, timestart);
-	//printf("direct neighbors: "); print_arraysort(buffer3);
 
-	diff_arraysort(res, buffer);
+	if (semantic == 0) { //semantic weak
+		j = *res;
+		for (i = 1; i <= *buffer; i++) {
+			res[++j] = buffer[i];
+		}
+		*res = j;
 
+		qsort(&res[1], *res, sizeof(unsigned int), compare);
+
+		remove_duplicates(res);
+	}
+	else if (semantic == 1) { //semantic strong
+
+		//printf("direct neighbors: "); print_arraysort(buffer3);
+		diff_arraysort(res, buffer);
+	}
 	free(buffer);
 }
+
 
 void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 	uint curr_node;
@@ -413,6 +383,89 @@ void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 }
 
 void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic) {
+	uint last_node, curr_node;
+	uint i, j;
+	uint cstart, cts, cte;
+	uint startnode, endnode, pos_stime, pos_etime;
+	uint *buffer;
+	uint nextnode;
+
+	buffer = malloc(sizeof(uint)*BUFFER);
+
+	*buffer = 0;
+
+	wt_select_all(g->log, node, buffer);
+
+	last_node = UINT_MAX;
+
+	j = 0;
+
+	for (i = 1; i <= *buffer; i++) {
+		curr_node = belong(g->map, buffer[i]);
+
+		startnode = start(g->map, curr_node);
+		nextnode = start(g->map, curr_node + 1);
+
+		endnode = nextnode;
+
+		pos_stime = wt_next_value_pos(g->log, g->nodes + ts + 1, startnode, endnode);
+		if (pos_stime > endnode) {
+			pos_stime = endnode;
+		}
+
+		pos_etime = wt_next_value_pos(g->log, g->nodes + te + 1, startnode, endnode);
+		if (pos_etime > endnode) {
+			pos_etime = endnode;
+		}
+
+
+
+#ifdef DEBUG
+		printf("startnode: %u\nendnode: %u\n", startnode, endnode);
+#endif
+		//cstart = rank_wt(g->log, node, startnode);
+		cstart = i-1;
+
+
+		//cts = rank_wt(g->log, node, pos_stime);
+		while(i <= *buffer && buffer[i] < pos_stime ) {
+					i++;
+		}
+		cts = i-1;
+
+		//cte = rank_wt(g->log, node, pos_etime);
+		while(i <= *buffer && buffer[i] < pos_etime ) {
+			i++;
+		}
+		cte = --i;
+
+
+		if (semantic == 0) {
+			// semantic = 0 weak
+			if ( (cts - cstart) % 2 == 1 || cte > cts) {
+				res[++j] = curr_node;
+			}
+		}
+		else if (semantic == 1) {
+			//semantic = 1 strong
+			if ( (cts - cstart) % 2 == 1 && cte == cts) {
+				res[++j] = curr_node;
+			}
+		}
+
+		while(i <= *buffer && buffer[i] < nextnode) {
+			i++;
+		}
+		i--;
+
+
+	}
+	*res = j;
+
+	free(buffer);
+}
+
+void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic) {
 	uint last_node, curr_node;
 	uint i, j;
 	uint cstart, cts, cte;
