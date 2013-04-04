@@ -305,74 +305,46 @@ void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, u
 	free(buffer);
 }
 
-
-void get_reverse_point_hack(uint *res, struct tgs *g, uint node, uint time) {
-	uint last_node, curr_node;
+void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
+	uint curr_node;
 	uint i, j;
 	uint cant, cpos;
 	uint startnode, endnode, endnode_log;
 	uint *buffer;
-
+	uint nextnode;
 	buffer = malloc(sizeof(uint)*BUFFER);
 
 	*buffer = 0;
 	wt_select_all(g->log, node, buffer);
 
-	last_node = UINT_MAX;
-
 	j = 0;
-	uint cosa;
 	for (i = 1; i <= *buffer; i++) {
 		curr_node = belong(g->map, buffer[i]);
 
-#ifdef DEBUG
-		printf("curr_node: %u\n", curr_node);
-#endif
+		startnode = start(g->map, curr_node);
+		nextnode = start(g->map, curr_node + 1);
 
-		if ( curr_node != last_node ) {
-			startnode = start(g->map, curr_node);
-			//printf("startnode: %u\nbuffer[i]: %u\n", startnode,buffer[i]-1);
-			//startnode = buffer[i];
-			endnode = start(g->map, curr_node + 1);
-
-			endnode_log = wt_next_value_pos(g->log, g->nodes + time + 1, startnode, endnode);
-			if (endnode_log < endnode) {
-				endnode = endnode_log;
-			}
-			//printf("startno: %u\n ", startnode);
-			//printf("endnode: %u\n",endnode);
-			//if(endnode<startnode) continue;
-
-#ifdef DEBUG
-			printf("startnode: %u\nendnode: %u\n", startnode, endnode);
-#endif
-			//cant = rank_wt(g->log, node, startnode);
-			//printf("%u %u\n",i-1, cant);
-			cant = i-1;
-
-
-			/*printf("startnodepos: %u\n ", startnode);
-			printf("buffer[%u]: %u\n ", i, buffer[i]);
-			printf("rank(%u, %u): %u\n", node, buffer[i], rank_wt(g->log, node, buffer[i]));
-			*/
-
-
-			//cpos = rank_wt(g->log, node, endnode);
-			//printf("cpos: %u\n", cpos);
-
-			while(buffer[i] < endnode && i <= *buffer) {
-				//printf("buffer[%u]=%u\n endnode: %u\n",i, buffer[i], endnode );
-				i++;
-			}
-			cpos = --i;
-			//printf("cosa: %u\n", cosa);
-
-			if ( (cpos - cant) % 2 == 1 ) {
-				res[++j] = curr_node;
-			}
-			//i--;
+		endnode_log = wt_next_value_pos(g->log, g->nodes + time + 1, startnode, nextnode);
+		endnode = nextnode;
+		if (endnode_log < endnode) {
+			endnode = endnode_log;
 		}
-		last_node = curr_node;
+
+		cant = i;
+		while(i <= *buffer && buffer[i] < endnode ) {
+			i++;
+		}
+		cpos = i;
+
+		if ( (cpos - cant) % 2 == 1 ) {
+			res[++j] = curr_node;
+		}
+
+		while(i <= *buffer && buffer[i] < nextnode) {
+			i++;
+		}
+		i--;
+
 	}
 	*res = j;
 
@@ -381,8 +353,7 @@ void get_reverse_point_hack(uint *res, struct tgs *g, uint node, uint time) {
 
 
 
-
-void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
+void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time) {
 	uint last_node, curr_node;
 	uint i, j;
 	uint cant, cpos;
@@ -433,67 +404,15 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 	free(buffer);
 }
 
-
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te) {
-	uint last_node, curr_node;
-	uint i, j;
-	uint cstart, cts, cte;
-	uint startnode, endnode, pos_stime, pos_etime;
-	uint *buffer;
-
-	buffer = malloc(sizeof(uint)*BUFFER);
-
-	*buffer = 0;
-
-	wt_select_all(g->log, node, buffer);
-
-	last_node = UINT_MAX;
-
-	j = 0;
-
-	for (i = 1; i <= *buffer; i++) {
-		curr_node = belong(g->map, buffer[i]);
-
-#ifdef DEBUG
-		printf("curr_node: %u\n", curr_node);
-#endif
-
-		if ( curr_node != last_node ) {
-			startnode = start(g->map, curr_node);
-			endnode = start(g->map, curr_node + 1);
-
-			pos_stime = wt_next_value_pos(g->log, g->nodes + ts + 1, startnode, endnode);
-			if (pos_stime > endnode) {
-				pos_stime = endnode;
-			}
-
-			pos_etime = wt_next_value_pos(g->log, g->nodes + te + 1, startnode, endnode);
-			if (pos_etime > endnode) {
-				pos_etime = endnode;
-			}
-
-
-
-#ifdef DEBUG
-			printf("startnode: %u\nendnode: %u\n", startnode, endnode);
-#endif
-			cstart = rank_wt(g->log, node, startnode);
-			cts = rank_wt(g->log, node, pos_stime);
-			cte = rank_wt(g->log, node, pos_etime);
-
-			if ( (cts - cstart) % 2 == 1 || cte > cts) {
-				res[++j] = curr_node;
-			}
-		}
-		last_node = curr_node;
-	}
-	*res = j;
-
-	free(buffer);
+	return get_reverse_interval(res, g, node, ts, te, 0);
 }
-
 
 void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
+	return get_reverse_interval(res, g, node, ts, te, 1);
+}
+
+void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic) {
 	uint last_node, curr_node;
 	uint i, j;
 	uint cstart, cts, cte;
@@ -540,9 +459,19 @@ void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 			cts = rank_wt(g->log, node, pos_stime);
 			cte = rank_wt(g->log, node, pos_etime);
 
-			if ( (cts - cstart) % 2 == 1 && cte == cts) {
-				res[++j] = curr_node;
+			if (semantic == 0) {
+				// semantic = 0 weak
+				if ( (cts - cstart) % 2 == 1 || cte > cts) {
+					res[++j] = curr_node;
+				}
 			}
+			else {
+				//semantic = 1 strong
+				if ( (cts - cstart) % 2 == 1 && cte == cts) {
+					res[++j] = curr_node;
+				}
+			}
+
 		}
 		last_node = curr_node;
 	}
@@ -550,3 +479,4 @@ void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 
 	free(buffer);
 }
+
