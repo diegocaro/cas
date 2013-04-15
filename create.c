@@ -20,16 +20,23 @@
 #define RANK_FACTOR 20
 
 
+struct infolog {
+	uint nodes;
+	uint changes;
+	uint maxtime;
+	uint size;
+};
+
 struct adjlog {
 	uint nodes; //number of nodes from [0 ... nodes -1]
 	uint changes; //total number of changes
 	uint maxtime; //maximum time in the dataset from [0 ... maxtime-1]
 
-	uint *map; //position of nodes
-	uint size_map;
-
 	uint size_log; //size of the log
 	uint *log; //including time and edges
+
+	uint *map; // bitmap of position of nodes
+	uint size_map;
 };
 
 // Print unsigned integer in binary format with spaces separating each byte.
@@ -152,95 +159,70 @@ void printtgs(struct tgs *a) {
 }
 
 void create( char *filename, struct adjlog *adjlog) {
-	uint nodes;
-	uint changes;
-	uint maxtime;
 	uint *log;
-	uint *map_nodes;
-	uint size_map;
 	uint *p;
+	uint i;
 	uint size;
-	
+
 	uint from, to, time, op;
 	uint last_time, last_from;
-	
+
 	FILE *f;
-	uint a=0,lines=0;
+	int k;
+
+	struct infolog infolog;
+	uint size_map;
+	uint *map_nodes;
+
 	f = fopen(filename, "r");
 
-	fscanf(f, "%u %u %u", &nodes, &changes, &maxtime);
+	fread(&infolog, sizeof(struct infolog), 1, f);
 
-	
-	size_map = enteros(nodes+2*changes,1);;//(nodes+changes+32-1)/32;//enteros(nodes+changes,1);
+	size_map = enteros(infolog.size, 1);//(nodes+changes+32-1)/32;//enteros(nodes+changes,1);
 	map_nodes = (uint *) calloc( size_map, sizeof(uint));
-	
-	//printf("you need %u integer for %u map_nodes\n", size_map, nodes+2*changes);
-	
 
-	log = (uint *)malloc( sizeof(uint) * (2*changes+100));
-  printf("size of log: %u\n",2*changes);
+
+	//log = (uint *)calloc((infolog.size)* 1.02, sizeof(uint));
+	log = (uint *)malloc( sizeof(uint) * infolog.size);
+	printf("size of log: %u\n",2*infolog.changes);
 	p = log;
-	
-	last_time = UINT_MAX;
-	last_from = UINT_MAX;
+	for(i = 0; i < infolog.size; i++) {
+		fread(&k, sizeof(k), 1, f);
 
-	lines = 0;
-	uint pp;
-	while ( 4 == fscanf(f, "%u %u %u %u", &from, &to, &time, &op)) {
-		lines += 1;
-		if ( from != last_from) {
-			
-			// if next change belongs from the previous node
-			if ( last_from +1 == from) {
-				// *p++ = nodes + from;
-				//printf("from %u\tlast_from %u\n", from, last_from);
-				//printf("setting %u bit (%u)\n", from + (p-log), nodes+2*changes);
+		if (k>=0) {
+			*p++ = (uint)k;
+		} else {
+			//printf("k: %d in %d\n",k, i);
+			// bitmap for
+			//printf("from %u\tlast_from %u\n", from, last_from);
+			//printf("setting %u bit (%u)\n", from + (p-log), nodes+2*changes);
+			//printf("setting %u bit\n",i);
+			bitset(map_nodes, i);
 
-				bitset(map_nodes, from + (p-log));
-				// (p - log) are the current number of items in the adjacency log
-			}
-			else {
-				while (++last_from <= from) {
-					// *p++ = nodes + last_from;
-					bitset(map_nodes, last_from + (p-log));
-					// (p - log) are the current number of items in the adjacency log
-				}
-			}
-			
-			last_from = from;
-			last_time = UINT_MAX;
 		}
-		//printf("%ld %u %u \n", p-log,2*changes, a);
-		if ( time != last_time) {
-			*p++ = nodes + time;a++;
-		}
-
-		*p++ = to;
-		last_time = time;
-    
 	}
-	
+
+
 	fclose(f);
 
-	printf("lines read: %u\n", lines);
-	
 	size = p - log;
-	//printf("p - log: %lu\n", p-log);
+	printf("p - log: %lu\n", p-log);
 	//printf("log : %p", log);
 	log =  realloc(log,  sizeof(uint) * size);
 	//printf("log : %p", log);
-	
-	
-	map_nodes = realloc(map_nodes, sizeof(uint) * enteros(size+nodes,1));
 
-	adjlog->nodes = nodes;
-	adjlog->changes = changes;
-	adjlog->maxtime = maxtime;
+	//map_nodes = realloc(map_nodes, sizeof(uint) * enteros(size+nodes,1));
+
+	adjlog->changes = infolog.changes;
+	adjlog->maxtime = infolog.maxtime;
+	adjlog->nodes = infolog.nodes;
+
 	adjlog->size_log = size;
 	adjlog->log = log;
+
 	adjlog->map = map_nodes;
-	adjlog->size_map = size + nodes;
-	
+	adjlog->size_map = infolog.size;
+
 }
 
 
