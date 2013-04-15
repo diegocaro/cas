@@ -5,9 +5,9 @@
  *
  * Has been modified by Diego Caro <diegocaro@gmail.com>
  */
-#include<stdio.h>
-#include<time.h>
-#include<stdlib.h>
+#include <stdio.h>
+#include <time.h>
+#include <stdlib.h>
 
 #include "timing.h"
 #include "tgs.h"
@@ -121,7 +121,7 @@ int main(int argc, char ** argv) {
         int totalres = 0;
         char * gotqueryFile = NULL;
         FILE * gotFile = NULL;
-        FILE * f;
+        ifstream f;
         unsigned int * gotreslist;
         int gotres = 0;
 
@@ -136,11 +136,11 @@ int main(int argc, char ** argv) {
 
         fileName = argv[1];
 
-        f = fopen(fileName, "r");
+        f.open(fileName, ios::binary);
         tgs_load(&index, f);
-        fclose(f);
+        f.close();
 
-        gotreslist = malloc(sizeof(unsigned int)*BUFFER);
+        gotreslist = (uint*)malloc(sizeof(unsigned int)*BUFFER);
 
         int nqueries = 0;
         TimeQuery * queries = readQueries(argv[2], &nqueries);

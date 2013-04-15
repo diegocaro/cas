@@ -8,8 +8,11 @@
 #ifndef TGS_H_
 #define TGS_H_
 
-#include "bitrankw32int.h"
-#include "wt.h"
+#include <BitSequence.h>
+#include <Sequence.h>
+
+using namespace std;
+using namespace cds_static;
 
 #define BUFFER 1024*1024
 
@@ -19,19 +22,18 @@ struct tgs {
 	uint nodes;
 	uint changes;
 	uint maxtime;
-	struct wt *log;
-	bitRankW32Int *map;
+	WaveletTree *log;
+	BitSequenceRG *map;
 
 };
 
 
-void tgs_save(struct tgs *a, FILE *f);
+void tgs_save(struct tgs *a, ofstream & f);
 void tgs_free(struct tgs *a);
-void tgs_load(struct tgs *a, FILE *f);
+void tgs_load(struct tgs *a, ifstream & f);
 
-
-inline uint start(bitRankW32Int *b, uint i) ;
-inline uint belong(bitRankW32Int *b, uint i);
+ uint start(BitSequenceRG *b, uint i) ;
+inline uint belong(BitSequenceRG *b, uint i);
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
 void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic);
@@ -46,5 +48,5 @@ void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te);
 
 
 void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time);
-
+void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic);
 #endif /* TGS_H_ */

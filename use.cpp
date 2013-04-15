@@ -11,19 +11,19 @@
 
 int main(int argc, char *argv[]) {
 	struct tgs index;
-	FILE *f;
+	ifstream f;
 	uint *buffer;
 	uint i, j;
 	uint a,b;
 
-	buffer = malloc(sizeof(uint)*BUFFER);
+	buffer = (uint *)malloc(sizeof(uint)*BUFFER);
 
 
 	printf("Reading file: '%s'\n", argv[1]);
 
-	f = fopen(argv[1], "r");
+	f.open(argv[1], ios::binary);
 	tgs_load(&index, f);
-	fclose(f);
+	f.close();
 /*
 	printf("Write your query: ");
 	while(scanf("%u %u", &a, &b)) {
@@ -41,7 +41,7 @@ int main(int argc, char *argv[]) {
 			printf("t=%u -> ", j);print_arraysort(buffer);
 		}
 	}
-
+ 
 	for ( i = 0; i < 5; i++) {
 		printf("direct weak %u\n", i);
 		for( j = 0; j <= index.maxtime; j++) {
@@ -60,11 +60,19 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-
+ 
 	for ( i = 0; i < 5; i++) {
 		printf("Reverses of node %u\n", i);
 		for( j = 0; j <= 5; j++) {
 			get_reverse_point(buffer, &index, i, j);
+			printf("t=%u <- ", j);print_arraysort(buffer);
+		}
+	}
+  
+	for ( i = 0; i < 5; i++) {
+		printf("Reverses of node %u (slow)\n", i);
+		for( j = 0; j <= 5; j++) {
+			get_reverse_point_slow(buffer, &index, i, j);
 			printf("t=%u <- ", j);print_arraysort(buffer);
 		}
 	}
@@ -87,7 +95,6 @@ int main(int argc, char *argv[]) {
 				printf("t=%u <- ", j);print_arraysort(buffer);
 			}
 		}
-
 
 	free(buffer);
 	return 0;

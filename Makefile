@@ -1,36 +1,31 @@
-DEPEN_WT=../wt/
+DEPEN_LIBCDS_INC=../libcds/includes/
+DEPEN_LIBCDS=../libcds/lib/libcds.a
 
-CC=gcc
+CC=g++
 DEBUG = -g -DDEBUG
-CFLAGS=-c -Wall -I$(DEPEN_WT) -O9
-LDFLAGS=-Wall -lm
+CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O9
+LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm
 
 EXT=
 
-SOURCES=basic.c bitrankw32int.c tgs.c arraysort.c
-OBJECTS=$(SOURCES:.c=.o)
+SOURCES=tgs.cpp arraysort.cpp
+OBJECTS=$(SOURCES:.cpp=.o)
 
-MAINSRC=use.c create.c benchmark.c
-MAINOBJ=$(MAINSRC:.c=.o)
-
-OBJS_WT=wt.o bit_array.o
-DEPENOBJS=$(addprefix $(DEPEN_WT), $(OBJS_WT))
+MAINSRC=use.cpp create.cpp benchmark.cpp
+MAINOBJ=$(MAINSRC:.cpp=.o)
 
 EXECUTABLE=create use benchmark
 
 #all: CFLAGS += -O9
-all: cleanobj wt $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
+all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
 
-debug: CC += $(DEBUG)
+debug: CPP += $(DEBUG)
 debug: clean all
-
-wt: 
-	$(MAKE) -C $(DEPEN_WT)
 
 #$(EXECUTABLE): $(MAINOBJ) $(OBJECTS)
 #	$(CC) $(LDFLAGS) $(OBJECTS) $(DEPENOBJS) -o $@
 
-.c.o:
+.cpp.o:
 	$(CC) $(CFLAGS) $< -o $@
 
 clean: cleanobj cleanexe

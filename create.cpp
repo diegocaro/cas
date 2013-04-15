@@ -11,14 +11,18 @@
 #include <math.h>
 #include <sys/types.h> //uint
 #include "debug.h"
-#include "basic.h"
-#include "bitrankw32int.h"
-#include "wt.h"
+
+#include <libcdsBasics.h>
+#include <BitSequence.h>
+#include <Mapper.h>
+#include <Sequence.h>
 
 #include "tgs.h"
 
 #define RANK_FACTOR 20
 
+using namespace std;
+using namespace cds_static;
 
 struct infolog {
 	uint nodes;
@@ -125,7 +129,7 @@ void printtgs(struct tgs *a) {
 	//for(i = 0; i < a->size_log; i++) printf(" %u", access_wt(a->log, i));
 
 	printf("\n\n");
-	for(i = 0; i < 10; i++) printf(" %u", access_wt(a->log, i));
+	for(i = 0; i < 10; i++) printf(" %u", a->log->access(i));
 	printf("\n\n");
 
 	uint node = 0;
@@ -134,7 +138,7 @@ void printtgs(struct tgs *a) {
 	for ( j = 0; j < a->size_map; j++) {
 		if (j > 10) return;
 //		printf("bitget %d\n",  bitget(a->map, i));
-		if ( isBitSet(a->map, j) == 1) {
+		if ( a->map->access(j) == 1) {
 			//its a node
 			printf("\n%u: ", node);
 			node++;
@@ -142,7 +146,7 @@ void printtgs(struct tgs *a) {
 		else {
 		i = j-node;
 
-		curr = access_wt(a->log, i);
+		curr = a->log->access(i);
 		if ( curr < a->nodes) {
 			//its an edge
 			printf(" +%u", curr);
@@ -178,7 +182,7 @@ void create( char *filename, struct adjlog *adjlog) {
 
 	fread(&infolog, sizeof(struct infolog), 1, f);
 
-	size_map = enteros(infolog.size, 1);//(nodes+changes+32-1)/32;//enteros(nodes+changes,1);
+	size_map = uint_len(infolog.size, 1);//(nodes+changes+32-1)/32;//enteros(nodes+changes,1);
 	map_nodes = (uint *) calloc( size_map, sizeof(uint));
 
 
@@ -208,7 +212,7 @@ void create( char *filename, struct adjlog *adjlog) {
 	size = p - log;
 	printf("p - log: %lu\n", p-log);
 	//printf("log : %p", log);
-	log =  realloc(log,  sizeof(uint) * size);
+	log =  (uint *)realloc(log,  sizeof(uint) * size);
 	//printf("log : %p", log);
 
 	//map_nodes = realloc(map_nodes, sizeof(uint) * enteros(size+nodes,1));
@@ -235,17 +239,23 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog) {
 	
 	tgs->size_log = adjlog->size_log;
 	tgs->size_map = adjlog->size_map;
-	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
+//	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
+  tgs->map = new BitSequenceRG(adjlog->map, tgs->size_map, RANK_FACTOR);
 	
 	//printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
-	next_power = (uint) log2(tgs->nodes + tgs->maxtime) + 1;
-	next_power = (uint) 1 << next_power;
-	LOG("next power: %u\n", next_power);
+	//next_power = (uint) log2(tgs->nodes + tgs->maxtime) + 1;
+	//next_power = (uint) 1 << next_power;
+	//LOG("next power: %u\n", next_power);
  	INFO("Creating WT for log\n");
 
- 	tgs->log = (struct wt*)malloc(sizeof(struct wt));
-	create_wt(&adjlog->log, tgs->size_log, tgs->log, 0, next_power);
+ 	//tgs->log = (struct wt*)malloc(sizeof(struct wt));
+	//create_wt(&adjlog->log, tgs->size_log, tgs->log, 0, next_power);
+  
+  tgs->log = new WaveletTree(adjlog->log, adjlog->size_log, 
+				      new wt_coder_binary(adjlog->log, adjlog->size_log,	new MapperNone()),
+				      new BitSequenceBuilderRG(RANK_FACTOR), 
+				      new MapperNone());
 	
 }
 
@@ -266,10 +276,10 @@ int main( int argc, char *argv[]) {
 	
 	printtgs(&tgindex);
 
-	FILE *f;
-	f = fopen(argv[2], "w");
+	ofstream f;
+	f.open(argv[2], ios::binary);
 	tgs_save(&tgindex, f);
-	fclose(f);
+	f.close();
 	
 	adjlog_free(&tg);
 	tgs_free(&tgindex);
