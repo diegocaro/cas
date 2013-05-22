@@ -210,7 +210,7 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 
 	*res = 0;
   vector<uint> myres;
-	g->log->range_report(startnode, endnode, 0, g->nodes , &myres);
+	g->log->range_report(startnode, endnode, 0, g->nodes , myres);
 	//printf("res: ");print_arraysort(res);
 	/* *res = 0;
 	count_symbols_range(g->log, startnode, endnode, res);
@@ -260,7 +260,7 @@ void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart,
 	//printf("stime: %u\netime: %u\n", pos_stime, pos_etime);
 	*buffer = 0;
   vector<uint> rng;
-	g->log->range_report(pos_stime, pos_etime, 0, g->nodes , &rng);
+	g->log->range_report(pos_stime, pos_etime, 0, g->nodes , rng);
 	//count_symbols_range(g->log, startnode, endnode, buffer2);
 
 #ifdef DEBUG
