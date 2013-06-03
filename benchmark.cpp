@@ -17,9 +17,9 @@
 //#define EXPERIMENTS 1
 
 /*
-FIXME: Non soporta un nœmero de nodos maior que MAX_INT.
+FIXME: Non soporta un nÂœmero de nodos maior que MAX_INT.
 
-As consultas son nodos aleatorios (non Ž unha permutaci—n,
+As consultas son nodos aleatorios (non ÂŽ unha permutaciÂ—n,
 pode haber repetidos)
 */
 
@@ -38,7 +38,7 @@ pode haber repetidos)
 #define ISIZE 5
 
 int compareRes(unsigned int * l1, unsigned int * l2) {
-        int i;
+        uint i;
         if (l1[0]!=l2[0]) return 1;
         for (i = 1; i <= l1[0]; i++) {
                 if (l1[i] != l2[i])  {
@@ -94,7 +94,7 @@ TimeQuery * readQueries(char * filename, int * nqueries) {
                         res = fscanf(queryFile, "%d\n", &query->expectednres);
                 else {
                         res = fscanf(queryFile, "%d", &query->expectednres);
-                        int i;
+                        uint i;
                         query->expectedres = (unsigned int *) malloc((1+query->expectednres)*sizeof(unsigned int));
                         query->expectedres[0] = query->expectednres;
                         for (i = 1; i <= query->expectednres; i++) {
@@ -123,7 +123,7 @@ int main(int argc, char ** argv) {
         FILE * gotFile = NULL;
         ifstream f;
         unsigned int * gotreslist;
-        int gotres = 0;
+        uint gotres = 0;
 
         if (argc < 3) {
                 printf("Usage: %s <graphfile> <queryfile> [<gotqueryfile>]", argv[0]);
@@ -225,7 +225,7 @@ int main(int argc, char ** argv) {
                     if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG) {
                       fprintf(gotFile,"0\n");
                     } else {
-                      int j;
+                      uint j;
                       fprintf(gotFile, "%d", gotreslist[0]);
                       for (j = 1; j <= gotreslist[0]; j++) {
                         fprintf(gotFile, " %d", gotreslist[j]);

@@ -168,8 +168,8 @@ void create( char *filename, struct adjlog *adjlog) {
 	uint i;
 	uint size;
 
-	uint from, to, time, op;
-	uint last_time, last_from;
+	//uint from, to, time, op;
+	//uint last_time, last_from;
 
 	FILE *f;
 	int k;
@@ -232,7 +232,7 @@ void create( char *filename, struct adjlog *adjlog) {
 
 
 void create_index(struct tgs *tgs, struct adjlog *adjlog) {
-	uint next_power;
+	
 	tgs->nodes = adjlog->nodes;
 	tgs->changes = adjlog->changes;
 	tgs->maxtime = adjlog->maxtime;
@@ -244,6 +244,7 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog) {
 	
 	//printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
+	//uint next_power;
 	//next_power = (uint) log2(tgs->nodes + tgs->maxtime) + 1;
 	//next_power = (uint) 1 << next_power;
 	//LOG("next power: %u\n", next_power);

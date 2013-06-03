@@ -1,13 +1,11 @@
-/*
- * arraysort.h
- *
- *  Created on: Mar 22, 2013
- *      Author: diegocaro
- */
-
-#ifndef ARRAYSORT_H_
-#define ARRAYSORT_H_
+#ifndef _ARRAYSORT_H_
+#define _ARRAYSORT_H_
 
 void print_arraysort(unsigned int *a);
+void diff_arraysort( unsigned int *a, const unsigned int *b);
 
-#endif /* ARRAYSORT_H_ */
+int compare (const void * a, const void * b);
+void remove_duplicates(unsigned int *b);
+
+void merge_arraysort( unsigned int *res,  const unsigned int *a, const unsigned int *b);
+#endif

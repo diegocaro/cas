@@ -3,7 +3,7 @@ DEPEN_LIBCDS=../libcds/lib/libcds.a
 
 CC=g++
 DEBUG = -g -DDEBUG
-CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O9
+CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3
 LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm
 
 EXT=
