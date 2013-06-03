@@ -39,7 +39,7 @@ cleanexe:
 create: create.o
 	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
-use: use.o
+use: use.o tgs.o
 	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 benchmark: benchmark.o
