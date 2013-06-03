@@ -1,0 +1,1 @@
+Hay un error en el reverse point fast... prueba con el ejemplo, no devuelve bien los vecinos reversos (cree que nodo 0 es vecino reverso de 4, pero no lo es)
