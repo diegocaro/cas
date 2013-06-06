@@ -23,7 +23,7 @@ struct tgs {
 	uint changes;
 	uint maxtime;
 	WaveletTree *log;
-	BitSequenceRG *map;
+	BitSequence *map;
 
 };
 
@@ -32,8 +32,8 @@ void tgs_save(struct tgs *a, ofstream & f);
 void tgs_free(struct tgs *a);
 void tgs_load(struct tgs *a, ifstream & f);
 
- uint start(BitSequenceRG *b, uint i) ;
-inline uint belong(BitSequenceRG *b, uint i);
+ uint start(BitSequence *b, uint i) ;
+inline uint belong(BitSequence *b, uint i);
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
 void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic);

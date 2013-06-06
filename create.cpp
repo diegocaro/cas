@@ -1,9 +1,9 @@
 /*
- * create.c
- *
- *  Created on: Mar 11, 2013
- *      Author: diegocaro
- */
+* create.c
+*
+*  Created on: Mar 11, 2013
+*      Author: diegocaro
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,6 +20,7 @@
 #include "tgs.h"
 
 #define RANK_FACTOR 20
+#define DEFAULT_SAMPLING 32
 
 using namespace std;
 using namespace cds_static;
@@ -43,20 +44,30 @@ struct adjlog {
 	uint size_map;
 };
 
+enum bitseq {
+	RG, R3,
+};
+
+struct opts {
+	enum bitseq bs; //bit data structure
+	char *outfile;
+	char *infile;
+};
+
 // Print unsigned integer in binary format with spaces separating each byte.
 void print_binary(unsigned int num) {
-  int arr[32];
-  int i = 0;
-  while (i++ < 32 || num / 2 != 0) {
-    arr[i - 1] = num % 2;
-    num /= 2;
-  }
+	int arr[32];
+	int i = 0;
+	while (i++ < 32 || num / 2 != 0) {
+		arr[i - 1] = num % 2;
+		num /= 2;
+	}
 
-  for (i = 0; i < 32; i++) {
-    printf("%d", arr[i]);
-    if (i % 8 == 0 && i != 0)
-      printf(" ");
-  }
+	for (i = 0; i < 32; i++) {
+		printf("%d", arr[i]);
+		if (i % 8 == 0 && i != 0)
+			printf(" ");
+	}
 }
 
 
@@ -78,7 +89,7 @@ void printadjlog(struct adjlog *a) {
 	printf("Maxtime: %u\n", a->maxtime);
 	printf("Size: %u\n", a->size_log);
 
-	printf("map: %X\n", a->map[0]);
+	//printf("map: %X\n", a->map[0]);
 	//print_binary(a->map[0]);
 	//for(i = 0; i < a->size_log; i++) printf(" %u", a->log[i]);
 
@@ -90,24 +101,24 @@ void printadjlog(struct adjlog *a) {
 	for ( j = 0; j < a->size_map; j++) {
 		if (j > 10) return;
 
-//		printf("bitget %d\n",  bitget(a->map, i));
+		//		printf("bitget %d\n",  bitget(a->map, i));
 		if ( bitget(&a->map[0], j) == 1) {
 			//its a node
 			printf("\n%u: ", node);
 			node++;
 		}
 		else {
-		i = j-node;
+			i = j-node;
 
-		if ( a->log[i] < a->nodes) {
-			//its an edge
-			printf(" +%u", a->log[i]);
+			if ( a->log[i] < a->nodes) {
+				//its an edge
+				printf(" +%u", a->log[i]);
+			}
+			else {
+				//its time
+				printf(" *%u (%u)", a->log[i] - a->nodes, a->log[i]);
+			}
 		}
-		else {
-			//its time
-			printf(" *%u (%u)", a->log[i] - a->nodes, a->log[i]);
-		}
-	}
 		
 	}
 	
@@ -124,7 +135,7 @@ void printtgs(struct tgs *a) {
 	printf("Maxtime: %u\n", a->maxtime);
 	printf("Size: %u\n", a->size_log);
 
-	printf("map: %X\n", a->map->data[0]);
+	//printf("map: %X\n", a->map->data[0]);
 	//print_binary(a->map->data[0]);
 	//for(i = 0; i < a->size_log; i++) printf(" %u", access_wt(a->log, i));
 
@@ -137,32 +148,32 @@ void printtgs(struct tgs *a) {
 	uint curr;
 	for ( j = 0; j < a->size_map; j++) {
 		if (j > 10) return;
-//		printf("bitget %d\n",  bitget(a->map, i));
+		//		printf("bitget %d\n",  bitget(a->map, i));
 		if ( a->map->access(j) == 1) {
 			//its a node
 			printf("\n%u: ", node);
 			node++;
 		}
 		else {
-		i = j-node;
+			i = j-node;
 
-		curr = a->log->access(i);
-		if ( curr < a->nodes) {
-			//its an edge
-			printf(" +%u", curr);
+			curr = a->log->access(i);
+			if ( curr < a->nodes) {
+				//its an edge
+				printf(" +%u", curr);
+			}
+			else {
+				//its time
+				printf(" *%u (%u)", curr - a->nodes, curr);
+			}
 		}
-		else {
-			//its time
-			printf(" *%u (%u)", curr - a->nodes, curr);
-		}
-	}
 
 	}
 
 	printf("\n");
 }
 
-void create( char *filename, struct adjlog *adjlog) {
+void readbin( char *filename, struct adjlog *adjlog) {
 	uint *log;
 	uint *p;
 	uint i;
@@ -231,16 +242,24 @@ void create( char *filename, struct adjlog *adjlog) {
 
 
 
-void create_index(struct tgs *tgs, struct adjlog *adjlog) {
-	
+void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
+	BitSequenceBuilder *bs;
+	switch(opts->bs) {
+		case RG:
+		bs = new BitSequenceBuilderRG(RANK_FACTOR); // by default, 5% of extra space for bitmaps
+		break;
+		case R3:
+		bs = new BitSequenceBuilderRRR(DEFAULT_SAMPLING); // DEFAULT_SAMPLING for RRR is 32 
+		break;
+	}
 	tgs->nodes = adjlog->nodes;
 	tgs->changes = adjlog->changes;
 	tgs->maxtime = adjlog->maxtime;
 	
 	tgs->size_log = adjlog->size_log;
 	tgs->size_map = adjlog->size_map;
-//	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
-  tgs->map = new BitSequenceRG(adjlog->map, tgs->size_map, RANK_FACTOR);
+	//	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
+	tgs->map = bs->build(adjlog->map, tgs->size_map);
 	
 	//printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
@@ -248,37 +267,73 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog) {
 	//next_power = (uint) log2(tgs->nodes + tgs->maxtime) + 1;
 	//next_power = (uint) 1 << next_power;
 	//LOG("next power: %u\n", next_power);
- 	INFO("Creating WT for log\n");
+	INFO("Creating WT for log\n");
 
- 	//tgs->log = (struct wt*)malloc(sizeof(struct wt));
+	//tgs->log = (struct wt*)malloc(sizeof(struct wt));
 	//create_wt(&adjlog->log, tgs->size_log, tgs->log, 0, next_power);
   
-  tgs->log = new WaveletTree(adjlog->log, adjlog->size_log, 
-				      new wt_coder_binary(adjlog->log, adjlog->size_log,	new MapperNone()),
-				      new BitSequenceBuilderRG(RANK_FACTOR), 
-				      new MapperNone());
+	tgs->log = new WaveletTree(adjlog->log, adjlog->size_log, 
+	new wt_coder_binary(adjlog->log, adjlog->size_log,	new MapperNone()),
+	bs, 
+	new MapperNone());
 	
 }
+
+int readopts(int argc, char **argv, struct opts *opts) {
+	int o;
+	
+	
+	// Default options
+	opts->bs = RG;
+
+	while ((o = getopt(argc, argv, "b:")) != -1) {
+		switch (o) {
+			case 'b':
+			if(strcmp(optarg, "RG")==0) {
+				INFO("Using RG for bitmaps");
+				opts->bs = RG;
+			}
+			else if(strcmp(optarg, "RRR")==0) {
+				INFO("Using RRR for bitmaps");
+				opts->bs = R3;
+			}
+			break;
+			default: /* '?' */
+			break;
+		}
+	}
+	
+        if (optind >= argc || (argc-optind) < 2 ) {
+		fprintf(stderr, "%s [-b RG,RRR] <dataset.bin> <outputfile>\n", argv[0]);
+		fprintf(stderr, "Expected argument after options\n");
+		exit(EXIT_FAILURE);
+        }
+	
+	opts->infile = argv[optind];
+	opts->outfile = argv[optind+1];
+	
+	return optind;
+
+}
+
 
 int main( int argc, char *argv[]) {
 	struct adjlog tg;
 	struct tgs tgindex;
-	if (argc < 3) {
-		fprintf(stderr, "%s <dataset> <outputfile>\n", argv[0]);
-		exit(-1);
-	}
+	struct opts opts;
 	
-	create(argv[1], &tg);
+	readopts(argc, argv, &opts);
 	
+	readbin(opts.infile, &tg);
 	
 	printadjlog(&tg);
 	
-	create_index(&tgindex, &tg);
+	create_index(&tgindex, &tg, &opts);
 	
 	printtgs(&tgindex);
 
 	ofstream f;
-	f.open(argv[2], ios::binary);
+	f.open(opts.outfile, ios::binary);
 	tgs_save(&tgindex, f);
 	f.close();
 	
@@ -286,64 +341,4 @@ int main( int argc, char *argv[]) {
 	tgs_free(&tgindex);
 	
 	return 0;
-	/*
-	//uint mem = atoi(argv[2]);
-	//uint K = atoi(argv[3]);
-	
-	//RePair *rc = new RePair( tg.log, tg.size, mem, argv[1], K);
-	//rc->compress(tg.size);
-	//rc->save(tg.size);
-	
-	size_t csymbols;
-	size_t crules;
-	Tdiccarray *rules;
-	
-	IRePair rp;
-	rp.compress( tg.log, tg.size, &csymbols, &crules, &rules);
-	
-	
-	printf("csymbols: %u\ncrules: %u\n", csymbols, crules);
-	//printf("alph: %d\nn: %d\n", rp.alph, rp.n);
-	
-	FILE *f;
-	
-	char filename[255];
-	
-	// saving compressed sequence
-	sprintf(filename, "%s.c", argv[1]);
-	f = fopen(filename, "w");
-	rp.save_compressed(f);
-	fclose(f);
-	
-	// saving rules
-	sprintf(filename, "%s.r", argv[1]);
-	f = fopen(filename, "w");
-	rp.save_rules(f);
-	fclose(f);
-	
-	
-	// savint metadata
-	struct rpadjlog rplog;
-	rplog.nodes = tg.nodes;
-	rplog.changes = tg.changes;
-	rplog.maxtime = tg.maxtime;
-	rplog.size = tg.size;
-	
-	rplog.csize = rp.get_csize();
-	rplog.frule = csymbols;
-	rplog.nrules = crules;
-	
-	sprintf(filename, "%s.info", argv[1]);
-	f = fopen(filename, "w");
-	fwrite(&rplog, sizeof(struct rpadjlog), 1, f);
-	fclose(f);
-	
-	
-	
-	
-	rp.stats();
-	
-	
-	
-	return 0;*/
 }

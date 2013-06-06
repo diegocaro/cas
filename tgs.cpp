@@ -50,7 +50,7 @@ void tgs_free(struct tgs *a) {
 	a->map = NULL;
 }
 
- uint start(BitSequenceRG *b, uint i) {
+ uint start(BitSequence *b, uint i) {
 //	return b->select1(i+1) - i; 	//in the paper this operation is
                                   //start(i) = select1(b, i) - i + 1
 
@@ -63,7 +63,7 @@ void tgs_free(struct tgs *a) {
   }
 }
 
-inline uint belong(BitSequenceRG *b, uint i) {
+inline uint belong(BitSequence *b, uint i) {
 	//return rank(b, i) - 1;
 	return b->rank1( b->select0(i) ) - 1;
 }
