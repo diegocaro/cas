@@ -68,6 +68,37 @@ inline uint belong(BitSequence *b, uint i) {
 	return b->rank1( b->select0(i) ) - 1;
 }
 
+uint get_snapshot(struct tgs *g, uint t) {
+	uint startnode, endnode, endnode_log;
+	
+	vector<uint> myres;
+	
+	uint count = 0;
+	uint i;
+	uint node;
+	for (node = 0; node < g->nodes; node++) {
+		startnode = start(g->map, node);
+		endnode = start(g->map, node + 1);
+		
+		endnode_log = g->log->next_value_pos( g->nodes + t + 1, startnode, endnode);
+
+	//	printf("endnode_log: %u\n", endnode_log);
+		if (endnode_log < endnode) {
+			endnode = endnode_log;
+		}
+		
+		myres.clear();
+		g->log->range_report(startnode, endnode, 0, g->nodes , myres);
+		for (i = 0; i < myres.size(); i += 2) {
+			//printf("buffer2[%u] = %u\n", i, buffer2[i]);
+			if (myres[i+1] % 2 == 1) {
+				count++;
+			}
+		}
+	}
+	
+	return count;
+}
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 	uint startnode, endnode, endnode_log;

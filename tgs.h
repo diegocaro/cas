@@ -46,7 +46,9 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te);
 void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te);
 
-
 void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time);
 void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic);
+
+uint get_snapshot(struct tgs *g, uint t);
+
 #endif /* TGS_H_ */

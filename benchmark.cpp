@@ -14,7 +14,7 @@
 #include "debug.h"
 #include "arraysort.h"
 
-//#define EXPERIMENTS 1
+#define EXPERIMENTS 1
 
 /*
 FIXME: Non soporta un nmero de nodos maior que MAX_INT.
@@ -27,6 +27,8 @@ pode haber repetidos)
 #define CELL 6
 #define CELL_WEAK 7
 #define CELL_STRONG 8
+
+#define SNAPSHOT 9
 
 #define DIRECT_NEIGHBORS 0
 #define REVERSE_NEIGHBORS 1
@@ -88,9 +90,14 @@ TimeQuery * readQueries(char * filename, int * nqueries) {
                                 res = fscanf(queryFile, "%d %d %d\n", &query->row, &query->initime, &query->endtime);
                                 break;
                         }
+                        case SNAPSHOT: {
+				//the number of active edges at time t
+                                res = fscanf(queryFile, "%d\n", &query->time); 
+                                break;
+                        }
                 }
 
-                if(query->type  == CELL || query->type == CELL_STRONG || query->type == CELL_WEAK)
+                if(query->type  == CELL || query->type == CELL_STRONG || query->type == CELL_WEAK || query->type == SNAPSHOT)
                         res = fscanf(queryFile, "%d\n", &query->expectednres);
                 else {
                         res = fscanf(queryFile, "%d", &query->expectednres);
@@ -191,10 +198,13 @@ int main(int argc, char ** argv) {
                         get_reverse_strong(gotreslist, &index, query.row, query.initime, query.endtime);
                         break;
                 }
-//              case FULLRANGE: {
+		case SNAPSHOT: {
+			gotres = get_snapshot(&index, query.time);
+			*gotreslist = gotres;
 //                      gotres = findRange(tree, 0, tree->nNodesReal, 0, tree->nNodesReal, time)[0][0];
-//                      break;
-//              }
+			break;
+		}
+
                 }
 
 #ifndef EXPERIMENTS
@@ -220,10 +230,13 @@ int main(int argc, char ** argv) {
                       fprintf(gotFile, "%d %d %d\n", query.row, query.initime, query.endtime);
                       break;
                     }
+		    case SNAPSHOT:
+		      fprintf(gotFile, "%d\n", query.time);
+		    break;
                     }
 
-                    if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG) {
-                      fprintf(gotFile,"0\n");
+                    if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG || query.type == SNAPSHOT) {
+                      fprintf(gotFile,"%d\n", gotres);
                     } else {
                       uint j;
                       fprintf(gotFile, "%d", gotreslist[0]);
@@ -238,7 +251,7 @@ int main(int argc, char ** argv) {
 
 
                   int failcompare = 0;
-                  if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG) {
+                  if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG || query.type == SNAPSHOT) {
                     failcompare = (gotres != query.expectednres);
                   } else {
                     failcompare = compareRes(gotreslist, query.expectedres);
@@ -247,9 +260,12 @@ int main(int argc, char ** argv) {
                   if (failcompare) {
                     printf("query queryType=%d, row=%d, column=%d, time=%d, initime=%d, endtime=%d, expectedres=%d\n", query.type, query.row, query.column, query.time, query.initime, query.endtime, query.expectednres);
                     printf("count: got %d expected %d\n", gotres, query.expectednres);
-                    printf("expected: "); print_arraysort(query.expectedres);
-                    printf("got     : "); print_arraysort(gotreslist);
-                    exit(1);
+                    
+		    if ( ! (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG || query.type == SNAPSHOT)) {
+		        printf("expected: "); print_arraysort(query.expectedres);
+                        printf("got     : "); print_arraysort(gotreslist);
+	    	    }
+		    exit(1);
                   }
                   totalres += gotres;
                 }
@@ -257,6 +273,7 @@ int main(int argc, char ** argv) {
 #else
                 totalres += *gotreslist;
 #endif
+
 
 
 
