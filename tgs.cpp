@@ -51,8 +51,10 @@ void tgs_free(struct tgs *a) {
 }
 
 
-uint tgs_size(struct tgs *a) {
-	return sizeof(struct tgs) + a->log->getSize() + a->map->getSize();
+size_t tgs_size(struct tgs *a) {
+	printf("%lu + %lu \n", a->log->getSize(), a->map->getSize());
+	
+	return (size_t)sizeof(struct tgs) + (size_t)a->log->getSize() + (size_t)a->map->getSize();
 }
 
 

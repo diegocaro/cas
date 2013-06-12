@@ -32,7 +32,7 @@ void tgs_save(struct tgs *a, ofstream & f);
 void tgs_free(struct tgs *a);
 void tgs_load(struct tgs *a, ifstream & f);
 
-uint tgs_size(struct tgs *a);
+size_t tgs_size(struct tgs *a);
 
  uint start(BitSequence *b, uint i) ;
 inline uint belong(BitSequence *b, uint i);
