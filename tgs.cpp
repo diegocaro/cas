@@ -28,7 +28,7 @@ void tgs_load(struct tgs *a, ifstream & f) {
 //fread(a, sizeof(struct tgs), 1, f);
   f.read(reinterpret_cast<char *>(a), sizeof(struct tgs));
 
-  a->map = BitSequenceRG::load(f);
+  a->map = BitSequence::load(f);
   a->log = WaveletTree::load(f);
 
 	//a->map = malloc(sizeof(bitRankW32Int));

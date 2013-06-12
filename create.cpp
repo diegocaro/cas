@@ -10,6 +10,7 @@
 #include <limits.h>
 #include <math.h>
 #include <sys/types.h> //uint
+#include <cstring>
 #include "debug.h"
 
 #include <libcdsBasics.h>
