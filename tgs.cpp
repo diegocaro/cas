@@ -50,6 +50,12 @@ void tgs_free(struct tgs *a) {
 	a->map = NULL;
 }
 
+
+uint tgs_size(struct tgs *a) {
+	return sizeof(struct tgs) + a->log->getSize() + a->map->getSize();
+}
+
+
  uint start(BitSequence *b, uint i) {
 //	return b->select1(i+1) - i; 	//in the paper this operation is
                                   //start(i) = select1(b, i) - i + 1

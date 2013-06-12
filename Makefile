@@ -11,10 +11,10 @@ EXT=
 SOURCES=tgs.cpp arraysort.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
-MAINSRC=use.cpp create.cpp benchmark.cpp
+MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp
 MAINOBJ=$(MAINSRC:.cpp=.o)
 
-EXECUTABLE=create use benchmark
+EXECUTABLE=create use benchmark getsize
 
 #all: CFLAGS += -O9
 all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
@@ -43,4 +43,7 @@ use: use.o tgs.o
 	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 benchmark: benchmark.o
+	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+
+getsize: getsize.o
 	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
