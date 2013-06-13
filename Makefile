@@ -3,18 +3,18 @@ DEPEN_LIBCDS=../libcds/lib/libcds.a
 
 CC=g++
 DEBUG = -g -DDEBUG
-CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3
-LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm
+CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3 -I../wtmatrix/ 
+LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm ../wtmatrix/wavelet_matrix.o
 
 EXT=
 
 SOURCES=tgs.cpp arraysort.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
-MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp
+MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp create-wtm.cpp
 MAINOBJ=$(MAINSRC:.cpp=.o)
 
-EXECUTABLE=create use benchmark getsize
+EXECUTABLE=create use benchmark getsize create-wtm
 
 #all: CFLAGS += -O9
 all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 

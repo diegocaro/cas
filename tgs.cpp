@@ -29,7 +29,7 @@ void tgs_load(struct tgs *a, ifstream & f) {
   f.read(reinterpret_cast<char *>(a), sizeof(struct tgs));
 
   a->map = BitSequence::load(f);
-  a->log = WaveletTree::load(f);
+  a->log = WaveletMatrix::load(f);
 
 	//a->map = malloc(sizeof(bitRankW32Int));
 	//a->log = malloc(sizeof(struct wt));
@@ -52,9 +52,10 @@ void tgs_free(struct tgs *a) {
 
 
 size_t tgs_size(struct tgs *a) {
-	printf("%lu + %lu \n", a->log->getSize(), a->map->getSize());
+//	printf("%lu + %lu \n", a->log->getSize(), a->map->getSize());
 	
-	return (size_t)sizeof(struct tgs) + (size_t)a->log->getSize() + (size_t)a->map->getSize();
+	//return (size_t)sizeof(struct tgs) + (size_t)a->log->getSize() + (size_t)a->map->getSize();
+	return 0;
 }
 
 

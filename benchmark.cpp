@@ -14,7 +14,7 @@
 #include "debug.h"
 #include "arraysort.h"
 
-#define EXPERIMENTS 1
+//#define EXPERIMENTS 1
 
 /*
 FIXME: Non soporta un nmero de nodos maior que MAX_INT.

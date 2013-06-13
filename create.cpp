@@ -15,8 +15,8 @@
 
 #include <libcdsBasics.h>
 #include <BitSequence.h>
-#include <Mapper.h>
-#include <Sequence.h>
+
+#include <wavelet_matrix.h>
 
 #include "tgs.h"
 
@@ -273,11 +273,14 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	//tgs->log = (struct wt*)malloc(sizeof(struct wt));
 	//create_wt(&adjlog->log, tgs->size_log, tgs->log, 0, next_power);
   
+	/*
 	tgs->log = new WaveletTree(adjlog->log, adjlog->size_log, 
 	new wt_coder_binary(adjlog->log, adjlog->size_log,	new MapperNone()),
 	bs, 
 	new MapperNone());
+	*/
 	
+	tgs->log = new WaveletMatrix(adjlog->log, adjlog->size_log, bs);
 }
 
 int readopts(int argc, char **argv, struct opts *opts) {
@@ -338,8 +341,8 @@ int main( int argc, char *argv[]) {
 	tgs_save(&tgindex, f);
 	f.close();
 	
-	adjlog_free(&tg);
-	tgs_free(&tgindex);
+	//adjlog_free(&tg);
+	//tgs_free(&tgindex);
 	
 	return 0;
 }

@@ -9,7 +9,7 @@
 #define TGS_H_
 
 #include <BitSequence.h>
-#include <Sequence.h>
+#include <wavelet_matrix.h>
 
 using namespace std;
 using namespace cds_static;
@@ -22,7 +22,7 @@ struct tgs {
 	uint nodes;
 	uint changes;
 	uint maxtime;
-	WaveletTree *log;
+	WaveletMatrix *log;
 	BitSequence *map;
 
 };
