@@ -10,7 +10,7 @@ int main(int argc, char *argv[]) {
 	
 	struct tgs index;
 	ifstream f;
-	uint s;
+	size_t s;
         f.open(argv[1], ios::binary);
 	
 	if (f.is_open()) {
@@ -18,7 +18,7 @@ int main(int argc, char *argv[]) {
         	f.close();
 		s = tgs_size(&index);
 		
-		printf("%u bytes (%.2f Mbytes) used by '%s'\n", s, (float)s/1024/1024, argv[1]);
+		printf("%lu bytes (%.2lf Mbytes) used by '%s'\n", s, (double)s/1024/1024, argv[1]);
 		
 	} else {
 		fprintf(stderr,"Unable to open '%s'.\n", argv[1]);
