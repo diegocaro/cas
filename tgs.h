@@ -14,7 +14,7 @@
 using namespace std;
 using namespace cds_static;
 
-#define BUFFER 1024*1024
+#define BUFFER 1024*1024*10
 
 struct tgs {
 	uint size_log;
