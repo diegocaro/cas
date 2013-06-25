@@ -11,10 +11,10 @@ EXT=
 SOURCES=tgs.cpp arraysort.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
-MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp 
+MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp  text2adjacencybin.cpp
 MAINOBJ=$(MAINSRC:.cpp=.o)
 
-EXECUTABLE=create use benchmark getsize
+EXECUTABLE=create use benchmark getsize text2adjacencybin
 
 #all: CFLAGS += -O9
 all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
@@ -46,4 +46,7 @@ benchmark: benchmark.o
 	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 getsize: getsize.o
+	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+
+text2adjacencybin: text2adjacencybin.o
 	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
