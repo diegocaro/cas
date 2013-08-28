@@ -3,6 +3,9 @@ DEPEN_LIBCDS=../libcds/lib/libcds.a
 
 CC=g++
 DEBUG = -g -DDEBUG
+
+EXPERIMENTS = -DEXPERIMENTS
+
 CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3 -I../wtmatrix/ 
 LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm ../wtmatrix/wavelet_matrix.o
 
@@ -21,6 +24,9 @@ all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE)
 
 debug: CPP += $(DEBUG)
 debug: clean all
+
+experiments: CFLAGS += $(EXPERIMENTS)
+experiments: clean all
 
 #$(EXECUTABLE): $(MAINOBJ) $(OBJECTS)
 #	$(CC) $(LDFLAGS) $(OBJECTS) $(DEPENOBJS) -o $@
