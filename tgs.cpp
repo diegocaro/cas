@@ -227,7 +227,6 @@ int get_edge_next(struct tgs *g, uint node, uint v, uint t) {
 
 	startnode = start(g->map, node);
 	endnode = start(g->map, node + 1);
-        uint right=endnode;
 //	printf("startnode: %u\n", startnode);
 //	printf("endnode: %u\n", endnode);
 
@@ -246,11 +245,11 @@ int get_edge_next(struct tgs *g, uint node, uint v, uint t) {
 	uint r = re - rs;
         if ( r%2 == 1 ) return t;
 
-        uint s;
-        s = g->log->select(v, re+1);
+        uint c;
+        c = g->log->select(v, re+1);
         
-        if (s < endnode) {
-                return g->log->prev_value(g->nodes + g->maxtime, startnode, right);
+        if (c < endnode) {
+                return g->log->prev_value(g->nodes + g->maxtime, startnode, c);
         }
 
 
