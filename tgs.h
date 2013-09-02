@@ -53,4 +53,14 @@ void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uin
 
 uint get_snapshot(struct tgs *g, uint t);
 
+
+int get_edge_point(struct tgs *g, uint u, uint v, uint t);
+int get_edge_weak(struct tgs *g, uint u, uint v, uint tstart, uint tend);
+int get_edge_strong(struct tgs *g, uint u, uint v, uint tstart, uint tend);
+
+int get_edge_next(struct tgs *g, uint u, uint v, uint t);
+
+int get_edge_interval(struct tgs *g, uint u, uint v, uint tstart, uint tend, uint semantic);
+
+
 #endif /* TGS_H_ */

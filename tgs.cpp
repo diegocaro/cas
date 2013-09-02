@@ -147,6 +147,86 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 	*res = j;
 }
 
+int get_edge_point(struct tgs *g, uint node, uint v, uint t) {
+	uint startnode, endnode, endnode_log;
+
+	startnode = start(g->map, node);
+	endnode = start(g->map, node + 1);
+
+//	printf("startnode: %u\n", startnode);
+//	printf("endnode: %u\n", endnode);
+
+	endnode_log = g->log->next_value_pos( g->nodes + t + 1, startnode, endnode);
+
+//	printf("endnode_log: %u\n", endnode_log);
+
+
+	if (endnode_log < endnode) {
+		endnode = endnode_log;
+	}
+        
+        uint rs, re;
+        rs = g->log->rank(v, startnode);
+        re = g->log->rank(v, endnode);
+	uint r = re - rs;
+        if ( r%2 == 1 ) return 1;
+
+        return 0;
+}
+
+int get_edge_weak(struct tgs *g, uint u, uint v, uint tstart, uint tend) {
+        return get_edge_interval(g, u, v, tstart, tend, 0);
+}
+int get_edge_strong(struct tgs *g, uint u, uint v, uint tstart, uint tend) {
+        return get_edge_interval(g, u, v, tstart, tend, 1);        
+}
+
+int get_edge_interval(struct tgs *g, uint node, uint v, uint timestart, uint timeend, uint semantic) {
+	uint startnode, endnode;
+	
+	uint pos_stime, pos_etime;
+	uint *buffer;
+
+	buffer = (uint *)malloc(sizeof(uint)*BUFFER);
+
+	startnode = start(g->map, node);
+	endnode = start(g->map, node + 1);
+
+	pos_stime = g->log->next_value_pos(g->nodes + timestart + 1, startnode, endnode);
+	if (pos_stime > endnode) {
+		pos_stime = endnode;
+	}
+
+	pos_etime = g->log->next_value_pos(g->nodes + timeend + 1, startnode, endnode);
+	if (pos_etime > endnode) {
+		pos_etime = endnode;
+	}
+	
+        
+        uint ris, rie;
+        
+	ris = g->log->rank(v, pos_stime);
+        rie = g->log->rank(v, pos_etime);
+
+        uint r = rie - ris;
+
+
+	uint e = get_edge_point(g, node, v, timestart);
+
+	if (semantic == 0) { //semantic weak
+                if (e ==1 || r>0) return 1;
+                
+	}
+	else if (semantic == 1) { //semantic strong
+                if (e==1 || r==0) return 1;
+	}
+        return 0;
+}
+int get_edge_next(struct tgs *g, uint u, uint v, uint t) {
+        
+        return t;
+}
+
 
 void get_neighbors_weak(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
 	return get_neighbors_interval(res, g, node, timestart, timeend, 0);
