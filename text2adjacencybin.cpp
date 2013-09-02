@@ -46,7 +46,15 @@ void create( FILE *out, FILE *f, struct infolog *infolog) {
 	size_read = 0;
 	
 	while ( 4 == fscanf(f, "%u %u %u %u", &from, &to, &time, &op)) {
-		
+		/*if ( last_time != UINT_MAX && (time != last_time || from != last_from)) {
+			// *p++ = nodes + time;
+			//t = nodes + time;
+                        t = nodes + last_time;
+			fwrite(&t, sizeof(int), 1, out);
+			size_read++;
+		}*/
+                
+                
 		if ( from != last_from) {
 
 			// if next change belongs from the previous node
@@ -58,7 +66,7 @@ void create( FILE *out, FILE *f, struct infolog *infolog) {
 			}
 			else {
 				while (++last_from <= from) {
-					//*p++ = nodes + last_from;
+					// *p++ = nodes + last_from;
 					fwrite(&nodes_read, sizeof(int), 1, out);
 					nodes_read--;
 					size_read++;
@@ -68,10 +76,12 @@ void create( FILE *out, FILE *f, struct infolog *infolog) {
 			last_from = from;
 			last_time = UINT_MAX;
 		}
-
+                
+                
 		if ( time != last_time) {
-			//*p++ = nodes + time;
-			t = nodes + time;
+			// *p++ = nodes + time;
+			//t = nodes + time;
+                        t = nodes + time;
 			fwrite(&t, sizeof(int), 1, out);
 			size_read++;
 		}
@@ -90,6 +100,8 @@ void create( FILE *out, FILE *f, struct infolog *infolog) {
 		}
 	}
 
+        //t = nodes + last_time;
+	//fwrite(&t, sizeof(int), 1, out);
 
 	while (++last_from < nodes) {
 		//*p++ = nodes + last_from;
@@ -126,9 +138,15 @@ int main( int argc, char *argv[]) {
 	char filename[1000];
 	struct infolog infolog;
 	
+        if (argc < 2) {
+                fprintf(stderr,"%s <outputfile>\n",argv[0]);
+                return 1;
+        }
+        
 	sprintf(filename, "%s.bin", argv[1]);
 	
-	in = fopen(argv[1], "r");
+	//in = fopen(argv[1], "r");
+        in = stdin;
 	out = fopen(filename, "w");
 	
 	

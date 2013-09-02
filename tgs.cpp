@@ -119,7 +119,7 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 //	printf("startnode: %u\n", startnode);
 //	printf("endnode: %u\n", endnode);
 
-	endnode_log = g->log->next_value_pos( g->nodes + t + 1, startnode, endnode);
+	endnode_log = g->log->next_value_pos( g->nodes + t +1, startnode, endnode);
 
 //	printf("endnode_log: %u\n", endnode_log);
 
@@ -222,9 +222,40 @@ int get_edge_interval(struct tgs *g, uint node, uint v, uint timestart, uint tim
 	}
         return 0;
 }
-int get_edge_next(struct tgs *g, uint u, uint v, uint t) {
+int get_edge_next(struct tgs *g, uint node, uint v, uint t) {
+	uint startnode, endnode, endnode_log;
+
+	startnode = start(g->map, node);
+	endnode = start(g->map, node + 1);
+        uint right=endnode;
+//	printf("startnode: %u\n", startnode);
+//	printf("endnode: %u\n", endnode);
+
+	endnode_log = g->log->next_value_pos( g->nodes + t + 1, startnode, endnode);
+
+//	printf("endnode_log: %u\n", endnode_log);
+
+
+	if (endnode_log < endnode) {
+		endnode = endnode_log;
+	}
         
-        return t;
+        uint rs, re;
+        rs = g->log->rank(v, startnode);
+        re = g->log->rank(v, endnode);
+	uint r = re - rs;
+        if ( r%2 == 1 ) return t;
+
+        uint s;
+        s = g->log->select(v, re+1);
+        
+        if (s < endnode) {
+                return g->log->prev_value(g->nodes + g->maxtime, startnode, right);
+        }
+
+
+        return 0;
+        
 }
 
 

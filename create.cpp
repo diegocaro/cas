@@ -204,9 +204,10 @@ void readbin( char *filename, struct adjlog *adjlog) {
 	p = log;
 	for(i = 0; i < infolog.size; i++) {
 		fread(&k, sizeof(k), 1, f);
-
+                //printf("%d\n",k);
 		if (k>=0) {
 			*p++ = (uint)k;
+                        
 		} else {
 			//printf("k: %d in %d\n",k, i);
 			// bitmap for
