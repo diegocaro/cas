@@ -218,7 +218,7 @@ int get_edge_interval(struct tgs *g, uint node, uint v, uint timestart, uint tim
                 
 	}
 	else if (semantic == 1) { //semantic strong
-                if (e==1 || r==0) return 1;
+                if (e==1 && r==0) return 1;
 	}
         return 0;
 }
@@ -253,7 +253,7 @@ int get_edge_next(struct tgs *g, uint node, uint v, uint t) {
         }
 
 
-        return 0;
+        return -1;
         
 }
 
