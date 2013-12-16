@@ -238,6 +238,7 @@ int main(int argc, char ** argv) {
                 if (CHECK_RESULTS) {
                   if (savegotFile) {
                     gotFile = fopen(gotqueryFile, "a");
+                    fprintf(gotFile, "%d ", query.type);
                     switch(query.type) {
                     case EDGE: case EDGE_NEXT: {
                       fprintf(gotFile, "%d %d %d\n", query.row, query.column, query.time);
