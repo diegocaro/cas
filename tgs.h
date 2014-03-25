@@ -10,7 +10,7 @@
 
 #include <libcdsBasics.h>
 #include <BitSequence.h>
-#include <wavelet_matrix.h>
+#include "mywtmatrix.h"
 
 using namespace std;
 using namespace cds_static;

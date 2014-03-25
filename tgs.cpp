@@ -148,7 +148,7 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 
 	*res = 0;
 
-	g->log->range_report<append_odd>(startnode, endnode, 0, g->nodes , res);
+	((MyWaveletMatrix *)g->log)->range_report<append_odd>(startnode, endnode, 0, g->nodes , res);
 }
 
 int get_edge_point(struct tgs *g, uint node, uint v, uint t) {
@@ -292,7 +292,7 @@ void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart,
 	//printf("stime: %u\netime: %u\n", pos_stime, pos_etime);
 	*buffer1 = 0;
 
-	g->log->range_report<append_symbol>(pos_stime, pos_etime, 0, g->nodes , buffer1);
+	((MyWaveletMatrix *)g->log)->range_report<append_symbol>(pos_stime, pos_etime, 0, g->nodes , buffer1);
 	//count_symbols_range(g->log, startnode, endnode, buffer2);
 
 	*res = 0;
@@ -332,7 +332,7 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
   //buffer = malloc(sizeof(uint)*BUFFER);
 	//*buffer = 0;
   
-	g->log->select_all(node, buffer1);
+	((MyWaveletMatrix *)g->log)->select_all(node, buffer1);
   
 	j = 0;
 	for (i = 1; i <= *buffer1; i++) {
@@ -447,7 +447,7 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 
 	//*buffer = 0;
 
-	g->log->select_all(node, buffer1);
+	((MyWaveletMatrix *)g->log)->select_all(node, buffer1);
 
 	last_node = UINT_MAX;
 

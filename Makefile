@@ -12,10 +12,10 @@ LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm ../wtmatrix/wavelet_matrix.o
 
 EXT=
 
-SOURCES=tgs.cpp arraysort.cpp
+SOURCES=tgs.cpp arraysort.cpp mywtmatrix.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
-MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp  text2adjacencybin.cpp
+MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp  text2adjacencybin.cpp 
 MAINOBJ=$(MAINSRC:.cpp=.o)
 
 EXECUTABLE=create use benchmark getsize text2adjacencybin
