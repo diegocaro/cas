@@ -8,6 +8,7 @@
 #ifndef TGS_H_
 #define TGS_H_
 
+#include <libcdsBasics.h>
 #include <BitSequence.h>
 #include <wavelet_matrix.h>
 
@@ -35,7 +36,7 @@ void tgs_load(struct tgs *a, ifstream & f);
 size_t tgs_size(struct tgs *a);
 
  uint start(BitSequence *b, uint i) ;
-inline uint belong(BitSequence *b, uint i);
+inline uint belong(BitSequence *b, ulong i);
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
 void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic);

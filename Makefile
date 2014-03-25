@@ -2,7 +2,8 @@ DEPEN_LIBCDS_INC=../libcds/includes/
 DEPEN_LIBCDS=../libcds/lib/libcds.a
 
 CC=g++
-DEBUG = -g -DDEBUG
+
+DEBUG_CFLAGS = -c -Wall -I$(DEPEN_LIBCDS_INC) -O0 -I../wtmatrix/  -g -DDEBUG 
 
 EXPERIMENTS = -DEXPERIMENTS
 
@@ -22,7 +23,7 @@ EXECUTABLE=create use benchmark getsize text2adjacencybin
 #all: CFLAGS += -O9
 all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
 
-debug: CPP += $(DEBUG)
+debug: CFLAGS = $(DEBUG_CFLAGS)
 debug: clean all
 
 experiments: CFLAGS += $(EXPERIMENTS)
