@@ -36,7 +36,7 @@ int main(int argc, char *argv[]) {
 */
 
 	for ( i = 0; i < 5; i++) {
-		printf("start(%u): %u\n", i, start(index.map, i));
+		printf("start(%u): %lu\n", i, start(index.map, i));
 		for( j = 0; j <= index.maxtime; j++) {
 			get_neighbors_point(buffer, &index, i, j);
 			printf("t=%u -> ", j);print_arraysort(buffer);
@@ -69,14 +69,14 @@ int main(int argc, char *argv[]) {
 			printf("t=%u <- ", j);print_arraysort(buffer);
 		}
 	}
-  
+	/*
 	for ( i = 0; i < 5; i++) {
 		printf("Reverses of node %u (slow)\n", i);
 		for( j = 0; j <= 5; j++) {
 			get_reverse_point_slow(buffer, &index, i, j);
 			printf("t=%u <- ", j);print_arraysort(buffer);
 		}
-	}
+	}*/
 
 	for ( i = 0; i < 5; i++) {
 			printf("Reverses weak %u\n", i);

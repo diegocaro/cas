@@ -35,8 +35,8 @@ void tgs_load(struct tgs *a, ifstream & f);
 
 size_t tgs_size(struct tgs *a);
 
- uint start(BitSequence *b, uint i) ;
-inline uint belong(BitSequence *b, ulong i);
+size_t start(BitSequence *b, uint i) ;
+inline uint belong(BitSequence *b, size_t i);
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
 void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic);
@@ -49,8 +49,8 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te);
 void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te);
 
-void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time);
-void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic);
+//void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time);
+//void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic);
 
 uint get_snapshot(struct tgs *g, uint t);
 

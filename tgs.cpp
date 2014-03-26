@@ -17,7 +17,7 @@ using namespace std;
 using namespace cds_static;
 
 uint buffer1[BUFFER];
-
+size_t buffer2[BUFFER];
 
 void tgs_save(struct tgs *a, ofstream & f) {
 	f.write(reinterpret_cast<char *>(a), sizeof(struct tgs));
@@ -62,11 +62,11 @@ size_t tgs_size(struct tgs *a) {
 }
 
 
- uint start(BitSequence *b, uint i) {
+size_t start(BitSequence *b, uint i) {
 //	return b->select1(i+1) - i; 	//in the paper this operation is
                                   //start(i) = select1(b, i) - i + 1
 
-  uint ret = b->select1(i+1);
+	size_t ret = b->select1(i+1);
   if (ret == (uint)(-1)) {
     return b->getLength() - i;
   }
@@ -75,7 +75,7 @@ size_t tgs_size(struct tgs *a) {
   }
 }
 
-inline uint belong(BitSequence *b, ulong i) {
+inline uint belong(BitSequence *b, size_t i) {
 	//return rank(b, i) - 1;
 
 	//printf("raro %lu\n", b->rank1( b->select0(i) ) - 1);
@@ -322,21 +322,21 @@ void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart,
 
 void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 	uint curr_node;
-	uint i, j;
-	uint cant, cpos;
-	uint startnode, endnode, endnode_log;
+	size_t i, j;
+	size_t cant, cpos;
+	size_t startnode, endnode, endnode_log;
 	//uint *buffer;
   //vector<uint> buffer;
-	uint nextnode;
+	size_t nextnode;
 	
   //buffer = malloc(sizeof(uint)*BUFFER);
 	//*buffer = 0;
   
-	((MyWaveletMatrix *)g->log)->select_all(node, buffer1);
+	((MyWaveletMatrix *)g->log)->select_all(node, buffer2);
   
 	j = 0;
-	for (i = 1; i <= *buffer1; i++) {
-		curr_node = belong(g->map, buffer1[i]);
+	for (i = 1; i <= *buffer2; i++) {
+		curr_node = belong(g->map, buffer2[i]);
 
 		startnode = start(g->map, curr_node);
 		nextnode = start(g->map, curr_node + 1);
@@ -348,7 +348,7 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 		}
 
 		cant = i;
-		while(i <= *buffer1 && buffer1[i] < endnode ) {
+		while(i <= *buffer2 && buffer2[i] < endnode ) {
 			i++;
 		}
 		cpos = i;
@@ -358,7 +358,7 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 		}
 
 		//se salta hasta el siguiente nodo
-		while(i <= *buffer1 && buffer1[i] < nextnode) {
+		while(i <= *buffer2 && buffer2[i] < nextnode) {
 			i++;
 		}
 		i--;
@@ -370,7 +370,7 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 }
 
 
-
+/*
 void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time) {
 	uint last_node, curr_node;
 	uint i, j;
@@ -381,7 +381,7 @@ void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time) {
   
 	//uint *buffer;
   //buffer = malloc(sizeof(uint)*BUFFER);
-  //*buffer = 0;
+  // *buffer = 0;
 
 	g->log->select_all(node, buffer);
 
@@ -422,7 +422,7 @@ void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time) {
 
 	//free(buffer);
 }
-
+*/
 
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 	return get_reverse_interval(res, g, node, ts, te, 0);
@@ -434,11 +434,11 @@ void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
 
 void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic) {
 	uint last_node, curr_node;
-	uint i, j;
-	uint cstart, cts, cte;
-	uint startnode, endnode, pos_stime, pos_etime;
+	size_t i, j;
+	size_t cstart, cts, cte;
+	size_t startnode, endnode, pos_stime, pos_etime;
 	//uint *buffer;
-	uint nextnode;
+	size_t nextnode;
 
 
  // vector<uint> buffer;
@@ -447,14 +447,14 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 
 	//*buffer = 0;
 
-	((MyWaveletMatrix *)g->log)->select_all(node, buffer1);
+	((MyWaveletMatrix *)g->log)->select_all(node, buffer2);
 
 	last_node = UINT_MAX;
 
 	j = 0;
 
-	for (i = 1; i <= *buffer1; i++) {
-		curr_node = belong(g->map, buffer1[i]);
+	for (i = 1; i <= *buffer2; i++) {
+		curr_node = belong(g->map, buffer2[i]);
 
 		startnode = start(g->map, curr_node);
 		nextnode = start(g->map, curr_node + 1);
@@ -485,7 +485,7 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 
 
 		//cts = rank_wt(g->log, node, pos_stime);
-		while(i <= *buffer1 && buffer1[i] < pos_stime ) {
+		while(i <= *buffer2 && buffer2[i] < pos_stime ) {
 					i++;
 		}
 		cts = i;
@@ -495,7 +495,7 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 
 
 		//cte = rank_wt(g->log, node, pos_etime);
-		while(i <= *buffer1 && buffer1[i] < pos_etime ) {
+		while(i <= *buffer2 && buffer2[i] < pos_etime ) {
 			i++;
 		}
 		cte = i;
@@ -518,7 +518,7 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 			}
 		}
 
-		while(i <= *buffer1 && buffer1[i] < nextnode) {
+		while(i <= *buffer2 && buffer2[i] < nextnode) {
 			i++;
 		}
 		i--;
@@ -530,7 +530,7 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 	//free(buffer);
 }
 
-
+/*
 void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic) {
 	uint last_node, curr_node;
 	uint i, j;
@@ -540,7 +540,7 @@ void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uin
 
 //	buffer = malloc(sizeof(uint)*BUFFER);
 
-	//*buffer = 0;
+	// *buffer = 0;
 
   vector<uint> buffer;
 
@@ -600,4 +600,4 @@ void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uin
 
 	//free(buffer);
 }
-
+*/

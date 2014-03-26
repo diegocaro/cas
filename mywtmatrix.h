@@ -21,17 +21,17 @@ typedef void (*action)(uint, uint, uint*);
 
 class MyWaveletMatrix : public WaveletMatrix {
 public:
-	void select_all(uint symbol, uint *res);
+	void select_all(uint symbol, size_t *res);
 
 
 	template<action F>
-	void range_report(uint start, uint end, uint lowvoc, uint uppvoc, uint *res);
+	void range_report(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res);
 
 protected:
-	void _select_all(uint start, uint end, uint symbol, uint level, uint *res);
+	void _select_all(size_t start, size_t end, uint symbol, uint level, size_t *res);
 
 	template<action F>
-	void _range_report(uint start, uint end, uint lowvoc, uint uppvoc, uint vocmin, uint vocmax, uint level,  uint *res);
+	void _range_report(size_t start, size_t end, uint lowvoc, uint uppvoc, uint vocmin, uint vocmax, uint level,  uint *res);
 
 };
 

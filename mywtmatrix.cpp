@@ -4,18 +4,19 @@
 #include "mywtmatrix.h"
 
 
-template void MyWaveletMatrix::range_report<append_odd>(uint start, uint end, uint lowvoc, uint uppvoc, uint *res);
-template void MyWaveletMatrix::range_report<append_symbol>(uint start, uint end, uint lowvoc, uint uppvoc, uint *res);
+template void MyWaveletMatrix::range_report<append_odd>(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res);
+template void MyWaveletMatrix::range_report<append_symbol>(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res);
 
 
 template<action F>
-void MyWaveletMatrix::range_report(uint start, uint end, uint lowvoc, uint uppvoc, uint *res) {
+void MyWaveletMatrix::range_report(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res) {
+	*res = 0;
 	_range_report<F>(start, end, lowvoc, uppvoc, 0, 1u << height, 0,  res);
 }
 
 
 template<action F>
-void MyWaveletMatrix::_range_report(uint start, uint end, uint lowvoc, uint uppvoc, uint vocmin, uint vocmax, uint level, uint *res) {
+void MyWaveletMatrix::_range_report(size_t start, size_t end, uint lowvoc, uint uppvoc, uint vocmin, uint vocmax, uint level, uint *res) {
 
 	uint vocmid;
 	vocmid = ceil((float)(vocmax-vocmin)/2) + vocmin;
@@ -64,14 +65,14 @@ void MyWaveletMatrix::_range_report(uint start, uint end, uint lowvoc, uint uppv
 	_range_report<F>(s1 + Z[level], e1 + Z[level], lowvoc, uppvoc, vocmid, vocmax, level+1, res);
 }
 
-void MyWaveletMatrix::select_all(uint symbol, uint *res) {
+void MyWaveletMatrix::select_all(uint symbol, size_t *res) {
 	*res = 0;
 	_select_all(0, n, symbol, 0,  res);
 }
 
 
-void MyWaveletMatrix::_select_all(uint start, uint end, uint symbol, uint level, uint *res) {
-	uint i;
+void MyWaveletMatrix::_select_all(size_t start, size_t end, uint symbol, uint level, size_t *res) {
+	size_t i;
 	if (start >= end) {
 		//printf("start >= end\n");
 		return;
@@ -90,7 +91,7 @@ void MyWaveletMatrix::_select_all(uint start, uint end, uint symbol, uint level,
 	}
 
 
-	uint s0,e0,s1,e1;
+	size_t s0,e0,s1,e1;
 
 	s1 = bitmap[level]->rank1(start-1);
 	e1 = bitmap[level]->rank1(end-1);
