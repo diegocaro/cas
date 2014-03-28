@@ -39,13 +39,12 @@ pode haber repetidos)
 #define REVERSE_NEIGHBORS_STRONG 5
 
 typedef struct squery {
-        int type;
         unsigned int row;
         unsigned int column;
         unsigned int xvalue; //x axis value (number of contacts or number of nodes)
 } TimeQuery;
 
-
+int typeQuery=0;
 int getQuery(FILE *queryFile, TimeQuery *query) {
 
                 int res = EOF;
@@ -53,7 +52,7 @@ int getQuery(FILE *queryFile, TimeQuery *query) {
 				res = fscanf(queryFile, "%d", &query->xvalue);
                 if (res == EOF) return res;
 				
-                switch(query->type) {
+                switch(typeQuery) {
                         case EDGE: case EDGE_NEXT: case EDGE_WEAK: case EDGE_STRONG: {
                                 res = fscanf(queryFile, "%d %d\n", &query->row, &query->column);
                                 break;
@@ -80,7 +79,7 @@ int main(int argc, char ** argv) {
 		char * fileNameQuery;
         struct tgs index;
 
-		int typeQuery;
+		
 		int timePoint;
 		
 		int timeIntervalStart;
@@ -147,7 +146,7 @@ int main(int argc, char ** argv) {
 
 
 
-           switch(query.type) {
+           switch(typeQuery) {
                case EDGE: {
                        //gotres = index->edge_point(query.row, query.column, timePoint);
                        //gotres = findEdge(tree, query.row, query.column, timePoint);
