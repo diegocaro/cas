@@ -159,9 +159,7 @@ int main(int argc, char ** argv) {
 	printf("We are checking the results... Experiments mode off.\n");
 #endif
 
-        startTimer();
-
-        clock_t initime = clock();
+	startClockTime();
         for (i = 0; i < nqueries; i++) {
                 TimeQuery query = queries[i];
 
@@ -305,19 +303,23 @@ int main(int argc, char ** argv) {
 
 
         }
-        clock_t endtime = clock();
-
-        double difftime = (endtime - initime)*1000000/CLOCKS_PER_SEC;
+        ulong microsecs = endClockTime()/1000; //to microsecs
 
 //	printf("time = (%lf), %d queries, %lf micros/query, %lf micros/arista\n",
 //	               difftime, nqueries,
 //	               difftime/nqueries, difftime/totalres);
 
-	        printf("time = %lf (%ld) (%lf), %d queries, %lf micros/query, %lf micros/arista\n",
-	               timeFromBegin(), realTimeFromBegin(), difftime, nqueries,
-	               difftime/nqueries, difftime/totalres);
+	        //printf("time = %lf (%ld) (%lf), %d queries, %lf micros/query, %lf micros/arista\n",
+	         //      timeFromBegin(), realTimeFromBegin(), difftime, nqueries,
+	          //     difftime/nqueries, difftime/totalres);
+
+
+        // datasets.structura query_input num_queries totaloutput timeperquery timeperoutput
+        printf("%s\t%s\t%ld\t%d\t%d\t%lf\t%lf\n", argv[1], argv[2],
+                       microsecs, nqueries, totalres, (double)microsecs/nqueries, (double)microsecs/totalres);
 
         //destroyK2Tree(tree);
 
         exit(0);
+
 }
