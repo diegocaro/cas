@@ -20,6 +20,10 @@
 
 #include "tgs.h"
 
+
+#include <map>
+#include <vector>
+
 #define RANK_FACTOR 20
 #define DEFAULT_SAMPLING 32
 
@@ -52,7 +56,7 @@ enum bitseq {
 struct opts {
 	enum bitseq bs; //bit data structure
 	char *outfile;
-	char *infile;
+	//char *infile;
 };
 
 // Print unsigned integer in binary format with spaces separating each byte.
@@ -242,7 +246,64 @@ void readbin( char *filename, struct adjlog *adjlog) {
 
 }
 
+void readcontacts(struct adjlog *adjlog) {
+	uint nodes, edges, lifetime, contacts;
+	uint u,v,a,b;
 
+	vector < map<uint, vector<uint> > > btable;
+
+	scanf("%u %u %u %u", &nodes, &edges, &lifetime, &contacts);
+
+	for(uint i = 0; i < nodes; i++) {
+		map<uint, vector<uint> > t;
+		btable.push_back(t);
+	}
+
+	uint c_read = 0;
+	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
+		c_read++;
+		btable[u][a].push_back(v);
+		btable[u][b].push_back(v);
+	}
+
+	assert(c_read == contacts);
+
+	uint lenS = 4*contacts; //upper bound
+
+	uint *S = new uint[lenS];
+	uint p = 0;
+
+
+	uint sizeB = uint_len(lenS+nodes,1);
+	uint *B = (uint *)calloc(sizeB, sizeof(uint));
+	//uint q = 0;
+
+	map<uint, vector<uint> >::iterator it;
+
+	for(uint i = 0; i < nodes; i++) {
+		bitset(B, i+p);
+		for( it = btable[i].begin(); it != btable[i].end(); ++it) {
+			S[p++] = nodes+it->first;
+			for(uint j = 0; j < (it->second).size(); j++ ) {
+				S[p++] = (it->second).at(j);
+			}
+
+		}
+
+	}
+
+	adjlog->changes = 2*contacts;
+	adjlog->maxtime = lifetime;
+	adjlog->nodes = nodes;
+
+	adjlog->size_log = p;
+	adjlog->log = S;
+
+	adjlog->map = B;
+	adjlog->size_map = nodes+p;
+	printf("p: %u\n",p);
+
+}
 
 void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	BitSequenceBuilder *bs;
@@ -308,14 +369,14 @@ int readopts(int argc, char **argv, struct opts *opts) {
 		}
 	}
 	
-        if (optind >= argc || (argc-optind) < 2 ) {
-		fprintf(stderr, "%s [-b RG,RRR] <dataset.bin> <outputfile>\n", argv[0]);
+        if (optind >= argc || (argc-optind) < 1 ) {
+		fprintf(stderr, "%s [-b RG,RRR] <outputfile>\n", argv[0]);
 		fprintf(stderr, "Expected argument after options\n");
 		exit(EXIT_FAILURE);
         }
 	
-	opts->infile = argv[optind];
-	opts->outfile = argv[optind+1];
+	//opts->infile = argv[optind];
+	opts->outfile = argv[optind]; //era: optind +1
 	
 	return optind;
 
@@ -329,7 +390,8 @@ int main( int argc, char *argv[]) {
 	
 	readopts(argc, argv, &opts);
 	
-	readbin(opts.infile, &tg);
+	//readbin(opts.infile, &tg);
+	readcontacts(&tg);
 	
 	printadjlog(&tg);
 	
