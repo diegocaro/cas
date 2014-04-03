@@ -262,10 +262,12 @@ void readcontacts(struct adjlog *adjlog) {
 	uint c_read = 0;
 	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
 		c_read++;
+		if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
+
 		btable[u][a].push_back(v);
 		btable[u][b].push_back(v);
 	}
-
+	if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 	assert(c_read == contacts);
 
 	uint lenS = 4*contacts; //upper bound
