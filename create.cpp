@@ -265,9 +265,11 @@ void readcontacts(struct adjlog *adjlog) {
 		if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 
 		btable[u][a].push_back(v);
+		if (b == lifetime-1) continue;
+
 		btable[u][b].push_back(v);
 	}
-	if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
+	fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 	assert(c_read == contacts);
 
 	uint lenS = 4*contacts; //upper bound
@@ -303,7 +305,6 @@ void readcontacts(struct adjlog *adjlog) {
 
 	adjlog->map = B;
 	adjlog->size_map = nodes+p;
-	printf("p: %u\n",p);
 
 }
 
