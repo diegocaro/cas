@@ -7,8 +7,14 @@ DEBUG_CFLAGS = -c -Wall -I$(DEPEN_LIBCDS_INC) -O0 -I../wtmatrix/  -g -DDEBUG
 
 EXPERIMENTS = -DEXPERIMENTS
 
+UNAME := $(shell uname)
+LDFLAGSRT = 
+ifeq ($(UNAME), Linux)
+LDFLAGSRT = -lrt
+endif
+
 CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3 -I../wtmatrix/ 
-LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm ../wtmatrix/wavelet_matrix.o 
+LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm ../wtmatrix/wavelet_matrix.o $(LDFLAGSRT)
 
 EXT=
 
