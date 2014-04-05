@@ -1,7 +1,7 @@
 DEPEN_LIBCDS_INC=../libcds/includes/
 DEPEN_LIBCDS=../libcds/lib/libcds.a
 
-CC=g++
+#CC=g++
 
 DEBUG_CFLAGS = -c -Wall -I$(DEPEN_LIBCDS_INC) -O0 -I../wtmatrix/  -g -DDEBUG 
 
@@ -39,7 +39,7 @@ experiments: clean all
 #	$(CC) $(LDFLAGS) $(OBJECTS) $(DEPENOBJS) -o $@
 
 .cpp.o:
-	$(CC) $(CFLAGS) $< -o $@
+	$(CXX) $(CFLAGS) $< -o $@
 
 clean: cleanobj cleanexe
 
@@ -50,16 +50,16 @@ cleanexe:
 	rm -f $(EXECUTABLE)
 
 create: create.o
-	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 use: use.o tgs.o
-	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 benchmark: benchmark.o
-	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 getsize: getsize.o
-	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 exp-query: exp-query.o
-	$(CC) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
