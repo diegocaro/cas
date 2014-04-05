@@ -7,7 +7,7 @@
 
 #include <stdio.h>
 #include <limits.h>
-
+#include <cstring>
 #include <sys/types.h>
 
 #include "tgs.h"
