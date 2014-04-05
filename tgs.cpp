@@ -17,6 +17,7 @@ using namespace std;
 using namespace cds_static;
 
 uint buffer1[BUFFER];
+uint buffer3[BUFFER];
 size_t buffer2[BUFFER];
 
 void tgs_save(struct tgs *a, ofstream & f) {
@@ -296,10 +297,11 @@ void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart,
 	//count_symbols_range(g->log, startnode, endnode, buffer2);
 
 	*res = 0;
-	get_neighbors_point(res, g, node, timestart);
+	get_neighbors_point(buffer3, g, node, timestart);
 
+  //this semantic filter is O(d) where d is the out degree of the node
 	if (semantic == 0) { //semantic weak
-		j = *res;
+/*		j = *res;
 		for (i = 1; i <= *buffer1; i++) {
 			res[++j] = buffer1[i];
 		}
@@ -308,11 +310,17 @@ void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart,
 		qsort(&res[1], *res, sizeof(unsigned int), compare);
 
 		remove_duplicates(res);
+    */
+    merge_arraysort(res, buffer3, buffer1);
+    
 	}
 	else if (semantic == 1) { //semantic strong
 
 		//printf("direct neighbors: "); print_arraysort(buffer3);
-		diff_arraysort(res, buffer1);
+		//diff_arraysort(res, buffer1);
+    
+		diff_arraysort(buffer3, buffer1);
+    memcpy(res, buffer3, (*buffer3+1)*sizeof(uint));
 	}
 
 }
