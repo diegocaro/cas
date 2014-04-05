@@ -293,6 +293,8 @@ void readcontacts(struct adjlog *adjlog) {
 			}
 
 		}
+    
+    btable[i].clear();
 
 	}
 
