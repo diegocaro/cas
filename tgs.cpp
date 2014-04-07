@@ -68,7 +68,7 @@ size_t start(BitSequence *b, uint i) {
                                   //start(i) = select1(b, i) - i + 1
 
 	size_t ret = b->select1(i+1);
-  if (ret == (uint)(-1)) {
+  if (ret == (size_t)(-1)) {
     return b->getLength() - i;
   }
   else {
