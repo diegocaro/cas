@@ -8,3 +8,4 @@ Solved 2. Operaciones que devuelven posición retornan valores en uint. Si la se
 
 	Solucion: parcial, ahora todos los elementos relacionados con posicion se devuelven con size_t.
 	Solo la operación range devuelve la frecuencia de símbolos con uint (pero por ahora no debería haber problema, puesto que solo devuelve simbolos).
+	La operación select1 devuelve uint en algunos casos... (en libcds)... :()
