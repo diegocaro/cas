@@ -18,7 +18,7 @@ using namespace cds_static;
 
 uint buffer1[BUFFER];
 uint buffer3[BUFFER];
-size_t buffer2[BUFFER];
+size_t buffer2[2*BUFFER];
 
 void tgs_save(struct tgs *a, ofstream & f) {
 	f.write(reinterpret_cast<char *>(a), sizeof(struct tgs));
