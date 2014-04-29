@@ -136,20 +136,34 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 	endnode = start(g->map, node + 1);
 
 //	printf("startnode: %u\n", startnode);
-//	printf("endnode: %u\n", endnode);
+	//printf("endnode: %u\n", endnode);
 
 	endnode_log = g->log->next_value_pos( g->nodes + t +1, startnode, endnode);
 
-//	printf("endnode_log: %u\n", endnode_log);
+		//printf("endnode_log: %u\n", endnode_log);
 
 
 	if (endnode_log < endnode) {
 		endnode = endnode_log;
+		//printf("acato\n");
 	}
 
 	*res = 0;
 
 	((MyWaveletMatrix *)g->log)->range_report<append_odd>(startnode, endnode, 0, g->nodes , res);
+	/*
+	uint f;
+	for(uint i = startnode; i < endnode; i++) {
+		f = ((MyWaveletMatrix *)g->log)->access(i);
+		printf("S[%u] = ", i);
+		if (f < g->nodes) {
+			printf("%u (node)\n", f);
+		}
+		else {
+			printf("%u (time %u)\n", f, f - g->nodes);
+		}
+	}*/
+	
 }
 
 int get_edge_point(struct tgs *g, uint node, uint v, uint t) {

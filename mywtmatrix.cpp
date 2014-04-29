@@ -19,7 +19,7 @@ template<action F>
 void MyWaveletMatrix::_range_report(size_t start, size_t end, uint lowvoc, uint uppvoc, uint vocmin, uint vocmax, uint level, uint *res) {
 
 	uint vocmid;
-	vocmid = ceil((float)(vocmax-vocmin)/2) + vocmin;
+	vocmid = (vocmax-vocmin)/2 + vocmin;
 	//printf("vocmin: %u\n", vocmin);
 //	printf("vocmid: %u\n", vocmid);
 //	printf("vocmax: %u\n", vocmax);

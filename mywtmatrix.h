@@ -10,7 +10,7 @@
 #include <wavelet_matrix.h>
 
 inline void append_odd(uint symbol, uint freq, uint *res) {
-  if (freq % 2 == 1) { *res+=1; res[*res] = symbol; };
+  if (freq % 2 == 1 && freq > 0) { *res+=1; res[*res] = symbol; };
 }
 
 inline void append_symbol(uint symbol, uint freq, uint *res) {
