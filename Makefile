@@ -3,7 +3,7 @@ DEPEN_LIBCDS=../libcds/lib/libcds.a
 
 #CC=g++
 
-DEBUG_CFLAGS = -c -Wall -I$(DEPEN_LIBCDS_INC) -O0 -I../wtmatrix/  -g -DDEBUG 
+DEBUG_CFLAGS = -c -Wall -I$(DEPEN_LIBCDS_INC) -O0 -I../wtmatrix/ -std=c++0x  -g -DDEBUG 
 
 EXPERIMENTS = -DEXPERIMENTS
 
@@ -13,7 +13,7 @@ ifeq ($(UNAME), Linux)
 LDFLAGSRT = -lrt
 endif
 
-CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3 -I../wtmatrix/ 
+CFLAGS=-c -Wall -I$(DEPEN_LIBCDS_INC) -O3 -I../wtmatrix/ -std=c++0x
 LDFLAGS=-Wall $(DEPEN_LIBCDS) -lm ../wtmatrix/wavelet_matrix.o $(LDFLAGSRT)
 
 EXT=

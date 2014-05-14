@@ -21,12 +21,13 @@
 #include "tgs.h"
 
 
-#include <map>
-#include <vector>
+#include "btree_map.h"
+#include "btree_set.h"
 
 #define RANK_FACTOR 20
 #define DEFAULT_SAMPLING 32
 
+using namespace btree;
 using namespace std;
 using namespace cds_static;
 
@@ -43,7 +44,8 @@ struct adjlog {
 	uint maxtime; //maximum time in the dataset from [0 ... maxtime-1]
 
 	uint size_log; //size of the log
-	uint *log; //including time and edges
+//	uint *log; //including time and edges
+	vector<uint> *log;
 
 	uint *map; // bitmap of position of nodes
 	uint size_map;
@@ -75,16 +77,17 @@ void print_binary(unsigned int num) {
 	}
 }
 
-
+/*
 void adjlog_free(struct adjlog *a) {
-
-	free(a->log);
-	a->log = NULL;
+	a->log->clear();
+	vector<uint>().swap(a->log);
+	//free(a->log);
+	//a->log = NULL;
 	
 	free(a->map);
 	a->map = NULL;
 }
-
+*/
 void printadjlog(struct adjlog *a) {
 	uint i;
 
@@ -99,7 +102,7 @@ void printadjlog(struct adjlog *a) {
 	//for(i = 0; i < a->size_log; i++) printf(" %u", a->log[i]);
 
 	printf("\n\n");
-	for(i = 0; i < 10; i++) printf(" %u", a->log[i]);
+	for(i = 0; i < 10; i++) printf(" %u", a->log->at(i));
 	printf("\n\n");
 	uint node = 0;
 	uint j;
@@ -115,13 +118,13 @@ void printadjlog(struct adjlog *a) {
 		else {
 			i = j-node;
 
-			if ( a->log[i] < a->nodes) {
+			if ( a->log->at(i) < a->nodes) {
 				//its an edge
-				printf(" +%u", a->log[i]);
+				printf(" +%u",a->log->at(i));
 			}
 			else {
 				//its time
-				printf(" *%u (%u)", a->log[i] - a->nodes, a->log[i]);
+				printf(" *%u (%u)", a->log->at(i) - a->nodes, a->log->at(i));
 			}
 		}
 		
@@ -177,7 +180,7 @@ void printtgs(struct tgs *a) {
 
 	printf("\n");
 }
-
+/*
 void readbin( char *filename, struct adjlog *adjlog) {
 	uint *log;
 	uint *p;
@@ -245,36 +248,33 @@ void readbin( char *filename, struct adjlog *adjlog) {
 	adjlog->size_map = infolog.size;
 
 }
-
+*/
 void readcontacts(struct adjlog *adjlog) {
 	uint nodes, edges, lifetime, contacts;
 	uint u,v,a,b;
 
-	vector < map<uint, vector<uint> > > btable;
+	btree_map < uint, btree_map<uint, btree_set<uint> > > btable;
 
 	scanf("%u %u %u %u", &nodes, &edges, &lifetime, &contacts);
-
-	for(uint i = 0; i < nodes; i++) {
-		map<uint, vector<uint> > t;
-		btable.push_back(t);
-	}
 
 	uint c_read = 0;
 	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
 		c_read++;
 		if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 
-		btable[u][a].push_back(v);
+		btable[u][a].insert(v);
 		if (b == lifetime-1) continue;
 
-		btable[u][b].push_back(v);
+		btable[u][b].insert(v);
 	}
 	fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 	assert(c_read == contacts);
 
 	uint lenS = 4*contacts; //upper bound
-
-	uint *S = new uint[lenS];
+	//uint lenS = contacts; //lower bound of a growing graph start at the same timepoint
+	//uint *S = new uint[lenS];
+	vector<uint> *S = new vector<uint>();
+	
 	uint p = 0;
 
 
@@ -282,14 +282,20 @@ void readcontacts(struct adjlog *adjlog) {
 	uint *B = (uint *)calloc(sizeB, sizeof(uint));
 	//uint q = 0;
 
-	map<uint, vector<uint> >::iterator it;
-
+	btree_map<uint, btree_set<uint> >::iterator it;
+	btree_set<uint>::iterator itset;
 	for(uint i = 0; i < nodes; i++) {
 		bitset(B, i+p);
 		for( it = btable[i].begin(); it != btable[i].end(); ++it) {
-			S[p++] = nodes+it->first;
-			for(uint j = 0; j < (it->second).size(); j++ ) {
-				S[p++] = (it->second).at(j);
+			//S[p++] = nodes+it->first;
+			S->push_back(nodes+it->first);
+			
+			p++;
+			for(itset = it->second.begin(); itset != it->second.end(); ++itset ) {
+				//S[p++] = (it->second).at(j);
+//				S->push_back((it->second).at(j));
+				S->push_back(*itset);
+				p++;
 			}
 
 		}
@@ -297,6 +303,8 @@ void readcontacts(struct adjlog *adjlog) {
     btable[i].clear();
 
 	}
+
+	btable.clear();
 
 	adjlog->changes = 2*contacts;
 	adjlog->maxtime = lifetime;
@@ -347,7 +355,7 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	new MapperNone());
 	*/
 	
-	tgs->log = new WaveletMatrix(adjlog->log, adjlog->size_log, bs);
+	tgs->log = new WaveletMatrix(adjlog->log->data(), adjlog->size_log, bs);
 }
 
 int readopts(int argc, char **argv, struct opts *opts) {
