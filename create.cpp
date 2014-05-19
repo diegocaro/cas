@@ -249,27 +249,65 @@ void readbin( char *filename, struct adjlog *adjlog) {
 
 }
 */
+
+class Change {
+public:
+	uint u;
+	uint t;
+	uint v;
+	
+	Change() {
+		
+	}
+	
+	Change(const Change& rhs) {
+		u = rhs.u; v = rhs.v; t = rhs.t;
+	}
+	
+	bool operator<(const Change &rhs) const {
+		if (u<rhs.u) return true;
+		
+		if (u == rhs.u) {
+			if (t<rhs.t) return true;
+			if (t == rhs.t) return (v<rhs.v);
+		}
+		
+		return false;
+	}
+};
+
 void readcontacts(struct adjlog *adjlog) {
 	uint nodes, edges, lifetime, contacts;
 	uint u,v,a,b;
 
-	btree_map < uint, btree_map<uint, btree_set<uint> > > btable;
+	//btree_map < uint, btree_map<uint, btree_set<uint> > > btable;
+
+	btree_set<Change> btable;
 
 	scanf("%u %u %u %u", &nodes, &edges, &lifetime, &contacts);
+
+	Change k;
 
 	uint c_read = 0;
 	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
 		c_read++;
 		if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 
-		btable[u][a].insert(v);
-		if (b == lifetime-1) continue;
+		k.u = u; k.v = v; k.t = a;
+		btable.insert(k);
+		
+		//btable[u][a].insert(v);
+		
 
-		btable[u][b].insert(v);
+		if (b == lifetime-1) continue;
+		k.t = b;
+		btable.insert(k);
+		
+		//btable[u][b].insert(v);
 	}
 	fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 	assert(c_read == contacts);
-
+	
 	uint lenS = 4*contacts; //upper bound
 	//uint lenS = contacts; //lower bound of a growing graph start at the same timepoint
 	//uint *S = new uint[lenS];
@@ -282,26 +320,39 @@ void readcontacts(struct adjlog *adjlog) {
 	uint *B = (uint *)calloc(sizeB, sizeof(uint));
 	//uint q = 0;
 
-	btree_map<uint, btree_set<uint> >::iterator it;
-	btree_set<uint>::iterator itset;
+	btree_set<Change>::iterator it;
+	btree_set<Change>::iterator itlow;
+	btree_set<Change>::iterator itup;
+	
+	Change vlow;
+	Change vup;
+	
 	for(uint i = 0; i < nodes; i++) {
+		fprintf(stderr,"%f%%\r", (float)i/nodes*100);
 		bitset(B, i+p);
-		for( it = btable[i].begin(); it != btable[i].end(); ++it) {
+		
+		vlow.u = i;
+		vlow.v = 0;
+		vlow.t = 0;
+		
+		itlow = btable.lower_bound(vlow);
+		
+		uint lastt = -1;
+		for( it = itlow; it->u == i; ++it) {
+			//printf("%u %u %u \n", it->u, it->v, it->t);
 			//S[p++] = nodes+it->first;
-			S->push_back(nodes+it->first);
 			
-			p++;
-			for(itset = it->second.begin(); itset != it->second.end(); ++itset ) {
-				//S[p++] = (it->second).at(j);
-//				S->push_back((it->second).at(j));
-				S->push_back(*itset);
+			if (lastt != it->t) {
+				S->push_back(nodes+it->t); //time
 				p++;
+				lastt = it->t;
 			}
-
+						
+			S->push_back(it->v); //node
+			p++;
 		}
-    
-    btable[i].clear();
-
+		
+    	//btable.erase(itlow,itup);
 	}
 
 	btable.clear();
@@ -315,7 +366,7 @@ void readcontacts(struct adjlog *adjlog) {
 
 	adjlog->map = B;
 	adjlog->size_map = nodes+p;
-
+	
 }
 
 void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
