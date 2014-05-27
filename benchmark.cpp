@@ -161,6 +161,7 @@ int main(int argc, char ** argv) {
 
 	startClockTime();
         for (i = 0; i < nqueries; i++) {
+		fprintf(stderr, "Processing %d/%d\r", i, nqueries);
                 TimeQuery query = queries[i];
 
 		//cleaning vector of results
