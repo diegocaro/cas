@@ -353,7 +353,8 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 	
   //buffer = malloc(sizeof(uint)*BUFFER);
 	//*buffer = 0;
-  
+
+	size_t *p;  
 	((MyWaveletMatrix *)g->log)->select_all(node, buffer2);
   
 	j = 0;
@@ -370,19 +371,26 @@ void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
 		}
 
 		cant = i;
-		while(i <= *buffer2 && buffer2[i] < endnode ) {
-			i++;
-		}
+		//while(i <= *buffer2 && buffer2[i] < endnode ) {
+		//	i++;
+		//}
+		p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], endnode);
+                i = p - &buffer2[0];
+
 		cpos = i;
 
 		if ( (cpos - cant) % 2 == 1 ) {
 			res[++j] = curr_node;
 		}
 
-		//se salta hasta el siguiente nodo
-		while(i <= *buffer2 && buffer2[i] < nextnode) {
-			i++;
-		}
+		p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], nextnode);
+		i = p - &buffer2[0];
+
+		//se salta hasta el siguiente nodo, reemplazado por el lower_bound (binsearch)
+//		while(i <= *buffer2 && buffer2[i] < nextnode) {
+//			i++;
+//		}
+
 		i--;
 
 	}
@@ -461,7 +469,7 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 	size_t startnode, endnode, pos_stime, pos_etime;
 	//uint *buffer;
 	size_t nextnode;
-
+	size_t *p;
 
  // vector<uint> buffer;
 
@@ -501,15 +509,19 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 #endif
 		//cstart = rank_wt(g->log, node, startnode);
 		cstart = i;
-    //printf("rankwt: %u\n", g->log->rank(node, startnode));
-    //printf("cstart: %u\n", cstart);
+		//printf("rankwt: %u\n", g->log->rank(node, startnode));
+		//printf("cstart: %u\n", cstart);
 
 
 
 		//cts = rank_wt(g->log, node, pos_stime);
-		while(i <= *buffer2 && buffer2[i] < pos_stime ) {
-					i++;
-		}
+		// or
+		//while(i <= *buffer2 && buffer2[i] < pos_stime ) {
+		//			i++;
+		//}
+		//but better a binary search
+		p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], pos_stime);
+                i = p - &buffer2[0];
 		cts = i;
 
     //printf("rankwt: %u\n", g->log->rank(node, pos_stime));
@@ -517,11 +529,15 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 
 
 		//cte = rank_wt(g->log, node, pos_etime);
-		while(i <= *buffer2 && buffer2[i] < pos_etime ) {
-			i++;
-		}
+		// or
+		//while(i <= *buffer2 && buffer2[i] < pos_etime ) {
+		//	i++;
+		//}
+		// but better a binary search
+		p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], pos_etime);
+                i = p - &buffer2[0];
 		cte = i;
-
+		
     //printf("rankwt: %u\n", g->log->rank(node, pos_etime));
     //printf("cte: %u\n", cte);
 
@@ -540,9 +556,13 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 			}
 		}
 
-		while(i <= *buffer2 && buffer2[i] < nextnode) {
-			i++;
-		}
+
+		//while(i <= *buffer2 && buffer2[i] < nextnode) {
+		//	i++;
+		//}
+
+		p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], nextnode);
+                i = p - &buffer2[0];
 		i--;
 
 
