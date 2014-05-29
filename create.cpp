@@ -52,11 +52,12 @@ struct adjlog {
 };
 
 enum bitseq {
-	RG, R3,
+	RG, R3, SD
 };
 
 struct opts {
-	enum bitseq bs; //bit data structure
+	enum bitseq bs; //bits for wavelet tree
+	enum bitseq bb; //bits for B bitmap
 	char *outfile;
 	//char *infile;
 };
@@ -371,6 +372,8 @@ void readcontacts(struct adjlog *adjlog) {
 
 void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	BitSequenceBuilder *bs;
+	BitSequenceBuilder *bb;
+	
 	switch(opts->bs) {
 		case RG:
 		bs = new BitSequenceBuilderRG(RANK_FACTOR); // by default, 5% of extra space for bitmaps
@@ -378,7 +381,23 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 		case R3:
 		bs = new BitSequenceBuilderRRR(DEFAULT_SAMPLING); // DEFAULT_SAMPLING for RRR is 32 
 		break;
+		case SD:
+		bs = new BitSequenceBuilderSDArray();
+		break;
 	}
+	
+	switch(opts->bb) {
+		case RG:
+		bb = new BitSequenceBuilderRG(20); // by default, 5% of extra space for bitmaps
+		break;
+		case R3:
+		bb = new BitSequenceBuilderRRR(32); // DEFAULT_SAMPLING for RRR is 32 
+		break;
+		case SD:
+		bb = new BitSequenceBuilderSDArray();
+		break;
+	}
+	
 	tgs->nodes = adjlog->nodes;
 	tgs->changes = adjlog->changes;
 	tgs->maxtime = adjlog->maxtime;
@@ -386,7 +405,7 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	tgs->size_log = adjlog->size_log;
 	tgs->size_map = adjlog->size_map;
 	//	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
-	tgs->map = bs->build(adjlog->map, tgs->size_map);
+	tgs->map = bb->build(adjlog->map, tgs->size_map);
 	
 	//printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
@@ -415,26 +434,48 @@ int readopts(int argc, char **argv, struct opts *opts) {
 	
 	// Default options
 	opts->bs = RG;
+	opts->bb = SD;
 
-	while ((o = getopt(argc, argv, "b:")) != -1) {
+	while ((o = getopt(argc, argv, "b:t:")) != -1) {
 		switch (o) {
 			case 'b':
 			if(strcmp(optarg, "RG")==0) {
-				INFO("Using RG for bitmaps");
+				INFO("Using RG for wavelet matrix");
 				opts->bs = RG;
 			}
 			else if(strcmp(optarg, "RRR")==0) {
-				INFO("Using RRR for bitmaps");
+				INFO("Using RRR for wavelet matrix");
 				opts->bs = R3;
 			}
+			else if(strcmp(optarg, "SD")==0) {
+				INFO("Using SDarray for wavelet matrix");
+				opts->bs = SD;
+			}
 			break;
+			
+			case 't':
+			if(strcmp(optarg, "RG")==0) {
+				INFO("Using RG for bitmap B");
+				opts->bb = RG;
+			}
+			else if(strcmp(optarg, "RRR")==0) {
+				INFO("Using RRR for bitmap B");
+				opts->bb = R3;
+			}
+			else if(strcmp(optarg, "SD")==0) {
+				INFO("Using SDarray for bitmap B");
+				opts->bb = SD;
+			}
+			break;
+			
+			
 			default: /* '?' */
 			break;
 		}
 	}
 	
         if (optind >= argc || (argc-optind) < 1 ) {
-		fprintf(stderr, "%s [-b RG,RRR] <outputfile>\n", argv[0]);
+		fprintf(stderr, "%s [-b RG,RRR,SD] [-t RG,RRR,SD] <outputfile>\n", argv[0]);
 		fprintf(stderr, "Expected argument after options\n");
 		exit(EXIT_FAILURE);
         }
