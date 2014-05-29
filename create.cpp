@@ -15,14 +15,19 @@
 
 #include <libcdsBasics.h>
 #include <BitSequence.h>
-#include <Mapper.h>
-#include <Sequence.h>
+
+#include <wavelet_matrix.h>
 
 #include "tgs.h"
+
+
+#include "btree_map.h"
+#include "btree_set.h"
 
 #define RANK_FACTOR 20
 #define DEFAULT_SAMPLING 32
 
+using namespace btree;
 using namespace std;
 using namespace cds_static;
 
@@ -39,20 +44,22 @@ struct adjlog {
 	uint maxtime; //maximum time in the dataset from [0 ... maxtime-1]
 
 	uint size_log; //size of the log
-	uint *log; //including time and edges
+//	uint *log; //including time and edges
+	vector<uint> *log;
 
 	uint *map; // bitmap of position of nodes
 	uint size_map;
 };
 
 enum bitseq {
-	RG, R3,
+	RG, R3, SD
 };
 
 struct opts {
-	enum bitseq bs; //bit data structure
+	enum bitseq bs; //bits for wavelet tree
+	enum bitseq bb; //bits for B bitmap
 	char *outfile;
-	char *infile;
+	//char *infile;
 };
 
 // Print unsigned integer in binary format with spaces separating each byte.
@@ -71,16 +78,17 @@ void print_binary(unsigned int num) {
 	}
 }
 
-
+/*
 void adjlog_free(struct adjlog *a) {
-
-	free(a->log);
-	a->log = NULL;
+	a->log->clear();
+	vector<uint>().swap(a->log);
+	//free(a->log);
+	//a->log = NULL;
 	
 	free(a->map);
 	a->map = NULL;
 }
-
+*/
 void printadjlog(struct adjlog *a) {
 	uint i;
 
@@ -95,7 +103,7 @@ void printadjlog(struct adjlog *a) {
 	//for(i = 0; i < a->size_log; i++) printf(" %u", a->log[i]);
 
 	printf("\n\n");
-	for(i = 0; i < 10; i++) printf(" %u", a->log[i]);
+	for(i = 0; i < 10; i++) printf(" %u", a->log->at(i));
 	printf("\n\n");
 	uint node = 0;
 	uint j;
@@ -111,13 +119,13 @@ void printadjlog(struct adjlog *a) {
 		else {
 			i = j-node;
 
-			if ( a->log[i] < a->nodes) {
+			if ( a->log->at(i) < a->nodes) {
 				//its an edge
-				printf(" +%u", a->log[i]);
+				printf(" +%u",a->log->at(i));
 			}
 			else {
 				//its time
-				printf(" *%u (%u)", a->log[i] - a->nodes, a->log[i]);
+				printf(" *%u (%u)", a->log->at(i) - a->nodes, a->log->at(i));
 			}
 		}
 		
@@ -173,7 +181,7 @@ void printtgs(struct tgs *a) {
 
 	printf("\n");
 }
-
+/*
 void readbin( char *filename, struct adjlog *adjlog) {
 	uint *log;
 	uint *p;
@@ -204,9 +212,10 @@ void readbin( char *filename, struct adjlog *adjlog) {
 	p = log;
 	for(i = 0; i < infolog.size; i++) {
 		fread(&k, sizeof(k), 1, f);
-
+                //printf("%d\n",k);
 		if (k>=0) {
 			*p++ = (uint)k;
+                        
 		} else {
 			//printf("k: %d in %d\n",k, i);
 			// bitmap for
@@ -240,11 +249,131 @@ void readbin( char *filename, struct adjlog *adjlog) {
 	adjlog->size_map = infolog.size;
 
 }
+*/
+
+class Change {
+public:
+	uint u;
+	uint t;
+	uint v;
+	
+	Change() {
+		
+	}
+	
+	Change(const Change& rhs) {
+		u = rhs.u; v = rhs.v; t = rhs.t;
+	}
+	
+	bool operator<(const Change &rhs) const {
+		if (u<rhs.u) return true;
+		
+		if (u == rhs.u) {
+			if (t<rhs.t) return true;
+			if (t == rhs.t) return (v<rhs.v);
+		}
+		
+		return false;
+	}
+};
+
+void readcontacts(struct adjlog *adjlog) {
+	uint nodes, edges, lifetime, contacts;
+	uint u,v,a,b;
+
+	//btree_map < uint, btree_map<uint, btree_set<uint> > > btable;
+
+	btree_set<Change> btable;
+
+	scanf("%u %u %u %u", &nodes, &edges, &lifetime, &contacts);
+
+	Change k;
+
+	uint c_read = 0;
+	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
+		c_read++;
+		if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
+
+		k.u = u; k.v = v; k.t = a;
+		btable.insert(k);
+		
+		//btable[u][a].insert(v);
+		
+
+		if (b == lifetime-1) continue;
+		k.t = b;
+		btable.insert(k);
+		
+		//btable[u][b].insert(v);
+	}
+	fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
+	assert(c_read == contacts);
+	
+	uint lenS = 4*contacts; //upper bound
+	//uint lenS = contacts; //lower bound of a growing graph start at the same timepoint
+	//uint *S = new uint[lenS];
+	vector<uint> *S = new vector<uint>();
+	
+	uint p = 0;
 
 
+	uint sizeB = uint_len(lenS+nodes,1);
+	uint *B = (uint *)calloc(sizeB, sizeof(uint));
+	//uint q = 0;
+
+	btree_set<Change>::iterator it;
+	btree_set<Change>::iterator itlow;
+	btree_set<Change>::iterator itup;
+	
+	Change vlow;
+	Change vup;
+	
+	for(uint i = 0; i < nodes; i++) {
+		fprintf(stderr,"%f%%\r", (float)i/nodes*100);
+		bitset(B, i+p);
+		
+		vlow.u = i;
+		vlow.v = 0;
+		vlow.t = 0;
+		
+		itlow = btable.lower_bound(vlow);
+		
+		uint lastt = -1;
+		for( it = itlow; it->u == i; ++it) {
+			//printf("%u %u %u \n", it->u, it->v, it->t);
+			//S[p++] = nodes+it->first;
+			
+			if (lastt != it->t) {
+				S->push_back(nodes+it->t); //time
+				p++;
+				lastt = it->t;
+			}
+						
+			S->push_back(it->v); //node
+			p++;
+		}
+		
+    	//btable.erase(itlow,itup);
+	}
+
+	btable.clear();
+
+	adjlog->changes = 2*contacts;
+	adjlog->maxtime = lifetime;
+	adjlog->nodes = nodes;
+
+	adjlog->size_log = p;
+	adjlog->log = S;
+
+	adjlog->map = B;
+	adjlog->size_map = nodes+p;
+	
+}
 
 void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	BitSequenceBuilder *bs;
+	BitSequenceBuilder *bb;
+	
 	switch(opts->bs) {
 		case RG:
 		bs = new BitSequenceBuilderRG(RANK_FACTOR); // by default, 5% of extra space for bitmaps
@@ -252,7 +381,23 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 		case R3:
 		bs = new BitSequenceBuilderRRR(DEFAULT_SAMPLING); // DEFAULT_SAMPLING for RRR is 32 
 		break;
+		case SD:
+		bs = new BitSequenceBuilderSDArray();
+		break;
 	}
+	
+	switch(opts->bb) {
+		case RG:
+		bb = new BitSequenceBuilderRG(20); // by default, 5% of extra space for bitmaps
+		break;
+		case R3:
+		bb = new BitSequenceBuilderRRR(32); // DEFAULT_SAMPLING for RRR is 32 
+		break;
+		case SD:
+		bb = new BitSequenceBuilderSDArray();
+		break;
+	}
+	
 	tgs->nodes = adjlog->nodes;
 	tgs->changes = adjlog->changes;
 	tgs->maxtime = adjlog->maxtime;
@@ -260,7 +405,7 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	tgs->size_log = adjlog->size_log;
 	tgs->size_map = adjlog->size_map;
 	//	tgs->map = createBitRankW32Int(adjlog->map, tgs->size_map, 0, RANK_FACTOR);
-	tgs->map = bs->build(adjlog->map, tgs->size_map);
+	tgs->map = bb->build(adjlog->map, tgs->size_map);
 	
 	//printf("maxtime: %u\nnodes: %u\nmaxcosa: %u\n", tgs->maxtime, tgs->nodes, tgs->nodes + tgs->maxtime);
 	//creating wavelet_tree
@@ -273,11 +418,14 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	//tgs->log = (struct wt*)malloc(sizeof(struct wt));
 	//create_wt(&adjlog->log, tgs->size_log, tgs->log, 0, next_power);
   
+	/*
 	tgs->log = new WaveletTree(adjlog->log, adjlog->size_log, 
 	new wt_coder_binary(adjlog->log, adjlog->size_log,	new MapperNone()),
 	bs, 
 	new MapperNone());
+	*/
 	
+	tgs->log = new WaveletMatrix(adjlog->log->data(), adjlog->size_log, bs);
 }
 
 int readopts(int argc, char **argv, struct opts *opts) {
@@ -286,32 +434,54 @@ int readopts(int argc, char **argv, struct opts *opts) {
 	
 	// Default options
 	opts->bs = RG;
+	opts->bb = SD;
 
-	while ((o = getopt(argc, argv, "b:")) != -1) {
+	while ((o = getopt(argc, argv, "b:t:")) != -1) {
 		switch (o) {
 			case 'b':
 			if(strcmp(optarg, "RG")==0) {
-				INFO("Using RG for bitmaps");
+				INFO("Using RG for wavelet matrix");
 				opts->bs = RG;
 			}
 			else if(strcmp(optarg, "RRR")==0) {
-				INFO("Using RRR for bitmaps");
+				INFO("Using RRR for wavelet matrix");
 				opts->bs = R3;
 			}
+			else if(strcmp(optarg, "SD")==0) {
+				INFO("Using SDarray for wavelet matrix");
+				opts->bs = SD;
+			}
 			break;
+			
+			case 't':
+			if(strcmp(optarg, "RG")==0) {
+				INFO("Using RG for bitmap B");
+				opts->bb = RG;
+			}
+			else if(strcmp(optarg, "RRR")==0) {
+				INFO("Using RRR for bitmap B");
+				opts->bb = R3;
+			}
+			else if(strcmp(optarg, "SD")==0) {
+				INFO("Using SDarray for bitmap B");
+				opts->bb = SD;
+			}
+			break;
+			
+			
 			default: /* '?' */
 			break;
 		}
 	}
 	
-        if (optind >= argc || (argc-optind) < 2 ) {
-		fprintf(stderr, "%s [-b RG,RRR] <dataset.bin> <outputfile>\n", argv[0]);
+        if (optind >= argc || (argc-optind) < 1 ) {
+		fprintf(stderr, "%s [-b RG,RRR,SD] [-t RG,RRR,SD] <outputfile>\n", argv[0]);
 		fprintf(stderr, "Expected argument after options\n");
 		exit(EXIT_FAILURE);
         }
 	
-	opts->infile = argv[optind];
-	opts->outfile = argv[optind+1];
+	//opts->infile = argv[optind];
+	opts->outfile = argv[optind]; //era: optind +1
 	
 	return optind;
 
@@ -325,7 +495,8 @@ int main( int argc, char *argv[]) {
 	
 	readopts(argc, argv, &opts);
 	
-	readbin(opts.infile, &tg);
+	//readbin(opts.infile, &tg);
+	readcontacts(&tg);
 	
 	printadjlog(&tg);
 	
@@ -338,8 +509,8 @@ int main( int argc, char *argv[]) {
 	tgs_save(&tgindex, f);
 	f.close();
 	
-	adjlog_free(&tg);
-	tgs_free(&tgindex);
+	//adjlog_free(&tg);
+	//tgs_free(&tgindex);
 	
 	return 0;
 }

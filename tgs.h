@@ -8,8 +8,9 @@
 #ifndef TGS_H_
 #define TGS_H_
 
+#include <libcdsBasics.h>
 #include <BitSequence.h>
-#include <Sequence.h>
+#include "mywtmatrix.h"
 
 using namespace std;
 using namespace cds_static;
@@ -22,7 +23,7 @@ struct tgs {
 	uint nodes;
 	uint changes;
 	uint maxtime;
-	WaveletTree *log;
+	WaveletMatrix *log;
 	BitSequence *map;
 
 };
@@ -34,8 +35,8 @@ void tgs_load(struct tgs *a, ifstream & f);
 
 size_t tgs_size(struct tgs *a);
 
- uint start(BitSequence *b, uint i) ;
-inline uint belong(BitSequence *b, uint i);
+size_t start(BitSequence *b, uint i) ;
+inline uint belong(BitSequence *b, size_t i);
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint time);
 void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart, uint timeend, uint semantic);
@@ -48,9 +49,19 @@ void get_reverse_interval(uint *res, struct tgs *g, uint node, uint ts, uint te,
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te);
 void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te);
 
-void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time);
-void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic);
+//void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time);
+//void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uint te, uint semantic);
 
 uint get_snapshot(struct tgs *g, uint t);
+
+
+int get_edge_point(struct tgs *g, uint u, uint v, uint t);
+int get_edge_weak(struct tgs *g, uint u, uint v, uint tstart, uint tend);
+int get_edge_strong(struct tgs *g, uint u, uint v, uint tstart, uint tend);
+
+int get_edge_next(struct tgs *g, uint u, uint v, uint t);
+
+int get_edge_interval(struct tgs *g, uint u, uint v, uint tstart, uint tend, uint semantic);
+
 
 #endif /* TGS_H_ */

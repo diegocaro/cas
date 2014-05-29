@@ -12,23 +12,24 @@
 #include "timing.h"
 #include "tgs.h"
 #include "debug.h"
+
 #include "arraysort.h"
 
-#define EXPERIMENTS 1
-
 /*
-FIXME: Non soporta un nmero de nodos maior que MAX_INT.
+FIXME: Non soporta un numero de nodos maior que MAX_INT.
 
 As consultas son nodos aleatorios (non  unha permutacin,
 pode haber repetidos)
 */
 
 
-#define CELL 6
-#define CELL_WEAK 7
-#define CELL_STRONG 8
+#define EDGE 6
+#define EDGE_WEAK 7
+#define EDGE_STRONG 8
 
 #define SNAPSHOT 9
+
+#define EDGE_NEXT 10
 
 #define DIRECT_NEIGHBORS 0
 #define REVERSE_NEIGHBORS 1
@@ -73,11 +74,11 @@ TimeQuery * readQueries(char * filename, int * nqueries) {
                 res = fscanf(queryFile, "%d", &query->type);
                 if (res == EOF) break;
                 switch(query->type) {
-                        case CELL: {
+                        case EDGE: case EDGE_NEXT: {
                                 res = fscanf(queryFile, "%d %d %d\n", &query->row, &query->column, &query->time);
                                 break;
                         }
-                        case CELL_WEAK: case CELL_STRONG: {
+                        case EDGE_WEAK: case EDGE_STRONG: {
                                 res = fscanf(queryFile, "%d %d %d %d\n", &query->row, &query->column, &query->initime, &query->endtime);
                                 break;
                         }
@@ -97,7 +98,7 @@ TimeQuery * readQueries(char * filename, int * nqueries) {
                         }
                 }
 
-                if(query->type  == CELL || query->type == CELL_STRONG || query->type == CELL_WEAK || query->type == SNAPSHOT)
+                if(query->type  == EDGE || query->type  == EDGE_NEXT ||query->type == EDGE_STRONG || query->type == EDGE_WEAK || query->type == SNAPSHOT)
                         res = fscanf(queryFile, "%d\n", &query->expectednres);
                 else {
                         res = fscanf(queryFile, "%d", &query->expectednres);
@@ -133,7 +134,7 @@ int main(int argc, char ** argv) {
         uint gotres = 0;
 
         if (argc < 3) {
-                printf("Usage: %s <graphfile> <queryfile> [<gotqueryfile>]", argv[0]);
+                printf("Usage: %s <graphfile> <queryfile> [<gotqueryfile>]\n", argv[0]);
                 exit(1);
         }
         if (argc == 4) {
@@ -154,57 +155,81 @@ int main(int argc, char ** argv) {
 
         int i;
 
-        startTimer();
+#ifndef EXPERIMENTS
+	printf("We are checking the results... Experiments mode off.\n");
+#endif
 
-        clock_t initime = clock();
+	startClockTime();
         for (i = 0; i < nqueries; i++) {
+		fprintf(stderr, "Processing %d/%d\r", i, nqueries);
                 TimeQuery query = queries[i];
 
+		//cleaning vector of results
 
                 switch(query.type) {
-//                case CELL: {
-//                        gotres = findEdge(tree, query.row, query.column, query.time);
-//                        break;
-//                }
-//                case CELL_WEAK: {
-//                        gotres = findEdgeInterval(tree, query.row, query.column, query.initime, query.endtime, 0);
-//                        break;
-//                }
-//                case CELL_STRONG: {
-//                        gotres = findEdgeInterval(tree, query.row, query.column, query.initime, query.endtime, 1);
-//                        break;
-//                }
+               case EDGE: {
+                       //gotres = index->edge_point(query.row, query.column, query.time);
+                       //gotres = findEdge(tree, query.row, query.column, query.time);
+		       gotres = get_edge_point(&index, query.row, query.column, query.time);
+                       break;
+               }
+               case EDGE_NEXT: {
+                       //gotres = findEdgeInterval(tree, query.row, query.column, query.initime, query.endtime, 1);
+                       //gotres = index->edge_next(query.row, query.column, query.time);
+		       gotres = get_edge_next(&index, query.row, query.column, query.time);
+                       break;
+               }
+               case EDGE_WEAK: {
+                       //gotres = findEdgeInterval(tree, query.row, query.column, query.initime, query.endtime, 0);
+                       //gotres = index->edge_weak(query.row, query.column, query.initime, query.endtime);
+		       gotres = get_edge_weak(&index, query.row, query.column,query.initime, query.endtime);
+                       break;
+               }
+               case EDGE_STRONG: {
+                       //gotres = findEdgeInterval(tree, query.row, query.column, query.initime, query.endtime, 1);
+                       //gotres = index->edge_strong(query.row, query.column, query.initime, query.endtime);
+		       gotres = get_edge_strong(&index, query.row, query.column,query.initime, query.endtime);
+                       break;
+               }
                 case DIRECT_NEIGHBORS: {
                         get_neighbors_point(gotreslist, &index, query.row, query.time);
+			//index->direct_point(query.row, query.time, gotreslist);
+
                         break;
                 }
                 case REVERSE_NEIGHBORS: {
-                        get_reverse_point(gotreslist, &index, query.row, query.time);
+			get_reverse_point(gotreslist, &index, query.row, query.time);
+			//index->reverse_point(query.row, query.time, gotreslist);
                         break;
                 }
                 case DIRECT_NEIGHBORS_WEAK: {
                         get_neighbors_weak(gotreslist, &index, query.row, query.initime, query.endtime);
+			//index->direct_weak(query.row, query.initime, query.endtime, gotreslist);
                         break;
                 }
                 case REVERSE_NEIGHBORS_WEAK: {
                         get_reverse_weak(gotreslist, &index, query.row, query.initime, query.endtime);
+			//index->reverse_weak(query.row, query.initime, query.endtime, gotreslist);
                         break;
                 }
                 case DIRECT_NEIGHBORS_STRONG: {
                         get_neighbors_strong(gotreslist, &index, query.row, query.initime, query.endtime);
+			//index->direct_strong(query.row, query.initime, query.endtime, gotreslist);
                         break;
                 }
                 case REVERSE_NEIGHBORS_STRONG: {
-                        get_reverse_strong(gotreslist, &index, query.row, query.initime, query.endtime);
+			get_reverse_strong(gotreslist, &index, query.row, query.initime, query.endtime);
+			//index->reverse_strong(query.row, query.initime, query.endtime, gotreslist);
                         break;
                 }
+		
 		case SNAPSHOT: {
+			//gotres = index->snapshot(query.time);
 			gotres = get_snapshot(&index, query.time);
 			*gotreslist = gotres;
 //                      gotres = findRange(tree, 0, tree->nNodesReal, 0, tree->nNodesReal, time)[0][0];
 			break;
 		}
-
                 }
 
 #ifndef EXPERIMENTS
@@ -212,12 +237,13 @@ int main(int argc, char ** argv) {
                 if (CHECK_RESULTS) {
                   if (savegotFile) {
                     gotFile = fopen(gotqueryFile, "a");
+                    fprintf(gotFile, "%d ", query.type);
                     switch(query.type) {
-                    case CELL: {
+                    case EDGE: case EDGE_NEXT: {
                       fprintf(gotFile, "%d %d %d\n", query.row, query.column, query.time);
                       break;
                     }
-                    case CELL_WEAK: case CELL_STRONG: {
+                    case EDGE_WEAK: case EDGE_STRONG: {
                       fprintf(gotFile, "%d %d %d %d\n", query.row, query.column, query.initime, query.endtime);
                       break;
                     }
@@ -235,7 +261,7 @@ int main(int argc, char ** argv) {
 		    break;
                     }
 
-                    if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG || query.type == SNAPSHOT) {
+                    if (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT) {
                       fprintf(gotFile,"%d\n", gotres);
                     } else {
                       uint j;
@@ -251,7 +277,7 @@ int main(int argc, char ** argv) {
 
 
                   int failcompare = 0;
-                  if (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG || query.type == SNAPSHOT) {
+                  if (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT) {
                     failcompare = (gotres != query.expectednres);
                   } else {
                     failcompare = compareRes(gotreslist, query.expectedres);
@@ -261,7 +287,7 @@ int main(int argc, char ** argv) {
                     printf("query queryType=%d, row=%d, column=%d, time=%d, initime=%d, endtime=%d, expectedres=%d\n", query.type, query.row, query.column, query.time, query.initime, query.endtime, query.expectednres);
                     printf("count: got %d expected %d\n", gotres, query.expectednres);
                     
-		    if ( ! (query.type == CELL || query.type == CELL_WEAK || query.type == CELL_STRONG || query.type == SNAPSHOT)) {
+		    if ( ! (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT)) {
 		        printf("expected: "); print_arraysort(query.expectedres);
                         printf("got     : "); print_arraysort(gotreslist);
 	    	    }
@@ -277,21 +303,24 @@ int main(int argc, char ** argv) {
 
 
 
-
         }
-        clock_t endtime = clock();
-
-        double difftime = (endtime - initime)*1000000/CLOCKS_PER_SEC;
+        ulong microsecs = endClockTime()/1000; //to microsecs
 
 //	printf("time = (%lf), %d queries, %lf micros/query, %lf micros/arista\n",
 //	               difftime, nqueries,
 //	               difftime/nqueries, difftime/totalres);
 
-	        printf("time = %lf (%ld) (%lf), %d queries, %lf micros/query, %lf micros/arista\n",
-	               timeFromBegin(), realTimeFromBegin(), difftime, nqueries,
-	               difftime/nqueries, difftime/totalres);
+	        //printf("time = %lf (%ld) (%lf), %d queries, %lf micros/query, %lf micros/arista\n",
+	         //      timeFromBegin(), realTimeFromBegin(), difftime, nqueries,
+	          //     difftime/nqueries, difftime/totalres);
+
+
+        // datasets.structura query_input num_queries totaloutput timeperquery timeperoutput
+        printf("%s\t%s\t%ld\t%d\t%d\t%lf\t%lf\n", argv[1], argv[2],
+                       microsecs, nqueries, totalres, (double)microsecs/nqueries, (double)microsecs/totalres);
 
         //destroyK2Tree(tree);
 
         exit(0);
+
 }
