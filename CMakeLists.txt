@@ -22,7 +22,7 @@ endif()
 ### Default parameter for debug
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Og -DDEBUG")
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-   message("Makefile for Debug mode")
+   message(STATUS "Makefile for Debug mode")
 endif()
 
 ### Default parametrs for release
@@ -48,6 +48,9 @@ target_link_libraries(create libcds wtmatrix)
  
 add_executable(benchmark benchmark.cpp  $<TARGET_OBJECTS:Objs>)
 target_link_libraries(benchmark libcds wtmatrix)
+
+add_executable(benchmark2 benchmark2.cpp  $<TARGET_OBJECTS:Objs>)
+target_link_libraries(benchmark2 libcds wtmatrix)
 
 add_executable(exp-query exp-query.cpp  $<TARGET_OBJECTS:Objs>)
 target_link_libraries(exp-query libcds wtmatrix)
