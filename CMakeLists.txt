@@ -41,6 +41,7 @@ SET_TARGET_PROPERTIES(wtmatrix PROPERTIES
     IMPORTED_LOCATION  ${CMAKE_CURRENT_SOURCE_DIR}/../wtmatrix/wavelet_matrix.o)
 
 ### Common objects files
+
 add_library(Objs OBJECT tgs.cpp mywtmatrix.cpp arraysort.cpp)
 
 add_executable(create create.cpp $<TARGET_OBJECTS:Objs>)
@@ -56,3 +57,11 @@ add_executable(exp-query exp-query.cpp  $<TARGET_OBJECTS:Objs>)
 target_link_libraries(exp-query libcds wtmatrix)
 
 #install(TARGETS create DESTINATION bin)
+
+if (UNIX)
+target_link_libraries(benchmark -lrt)
+target_link_libraries(benchmark2 -lrt)
+target_link_libraries(exp-query -lrt)
+
+endif (UNIX)
+
