@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 2.8)
 project(tgs-index)
 
 ### Flags for all
-SET(CMAKE_CXX_FLAGS "-Wall")
+SET(CMAKE_CXX_FLAGS "-Wall -DEXPERIMENTS")
 
 ### CXX FLAGS
 include(CheckCXXCompilerFlag)
@@ -58,10 +58,10 @@ target_link_libraries(exp-query libcds wtmatrix)
 
 #install(TARGETS create DESTINATION bin)
 
-if (UNIX)
+if (${CMAKE_SYSTEM_NAME} MATCHES "Linux")
 target_link_libraries(benchmark -lrt)
 target_link_libraries(benchmark2 -lrt)
 target_link_libraries(exp-query -lrt)
 
-endif (UNIX)
+endif ()
 

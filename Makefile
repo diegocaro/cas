@@ -45,7 +45,7 @@ CMAKE_EDIT_COMMAND = /usr/local/Cellar/cmake/2.8.12.2/bin/ccmake
 CMAKE_SOURCE_DIR = /Users/diegocaro/Dropbox/research/temporalgraph/tgs-index
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /Users/diegocaro/Dropbox/research/temporalgraph/tgs-index
+CMAKE_BINARY_DIR = /Users/diegocaro/Research/temporalgraph/tgs-index
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -72,9 +72,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/diegocaro/Dropbox/research/temporalgraph/tgs-index/CMakeFiles /Users/diegocaro/Dropbox/research/temporalgraph/tgs-index/CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/diegocaro/Research/temporalgraph/tgs-index/CMakeFiles /Users/diegocaro/Research/temporalgraph/tgs-index/CMakeFiles/progress.marks
 	$(MAKE) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /Users/diegocaro/Dropbox/research/temporalgraph/tgs-index/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /Users/diegocaro/Research/temporalgraph/tgs-index/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -126,6 +126,19 @@ benchmark: cmake_check_build_system
 benchmark/fast:
 	$(MAKE) -f CMakeFiles/benchmark.dir/build.make CMakeFiles/benchmark.dir/build
 .PHONY : benchmark/fast
+
+#=============================================================================
+# Target rules for targets named benchmark2
+
+# Build rule for target.
+benchmark2: cmake_check_build_system
+	$(MAKE) -f CMakeFiles/Makefile2 benchmark2
+.PHONY : benchmark2
+
+# fast build rule for target.
+benchmark2/fast:
+	$(MAKE) -f CMakeFiles/benchmark2.dir/build.make CMakeFiles/benchmark2.dir/build
+.PHONY : benchmark2/fast
 
 #=============================================================================
 # Target rules for targets named create
@@ -200,6 +213,30 @@ benchmark.s: benchmark.cpp.s
 benchmark.cpp.s:
 	$(MAKE) -f CMakeFiles/benchmark.dir/build.make CMakeFiles/benchmark.dir/benchmark.cpp.s
 .PHONY : benchmark.cpp.s
+
+benchmark2.o: benchmark2.cpp.o
+.PHONY : benchmark2.o
+
+# target to build an object file
+benchmark2.cpp.o:
+	$(MAKE) -f CMakeFiles/benchmark2.dir/build.make CMakeFiles/benchmark2.dir/benchmark2.cpp.o
+.PHONY : benchmark2.cpp.o
+
+benchmark2.i: benchmark2.cpp.i
+.PHONY : benchmark2.i
+
+# target to preprocess a source file
+benchmark2.cpp.i:
+	$(MAKE) -f CMakeFiles/benchmark2.dir/build.make CMakeFiles/benchmark2.dir/benchmark2.cpp.i
+.PHONY : benchmark2.cpp.i
+
+benchmark2.s: benchmark2.cpp.s
+.PHONY : benchmark2.s
+
+# target to generate assembly for a file
+benchmark2.cpp.s:
+	$(MAKE) -f CMakeFiles/benchmark2.dir/build.make CMakeFiles/benchmark2.dir/benchmark2.cpp.s
+.PHONY : benchmark2.cpp.s
 
 create.o: create.cpp.o
 .PHONY : create.o
@@ -305,6 +342,7 @@ help:
 	@echo "... depend"
 	@echo "... Objs"
 	@echo "... benchmark"
+	@echo "... benchmark2"
 	@echo "... create"
 	@echo "... edit_cache"
 	@echo "... exp-query"
@@ -315,6 +353,9 @@ help:
 	@echo "... benchmark.o"
 	@echo "... benchmark.i"
 	@echo "... benchmark.s"
+	@echo "... benchmark2.o"
+	@echo "... benchmark2.i"
+	@echo "... benchmark2.s"
 	@echo "... create.o"
 	@echo "... create.i"
 	@echo "... create.s"

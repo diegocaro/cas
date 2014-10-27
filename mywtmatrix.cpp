@@ -6,6 +6,7 @@
 
 template void MyWaveletMatrix::range_report<append_odd>(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res);
 template void MyWaveletMatrix::range_report<append_symbol>(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res);
+template void MyWaveletMatrix::range_report<append_dummy>(size_t start, size_t end, uint lowvoc, uint uppvoc, uint *res);
 
 
 template<action F>
@@ -121,4 +122,3 @@ void MyWaveletMatrix::_select_all(size_t start, size_t end, uint symbol, uint le
 
 	}
 }
-

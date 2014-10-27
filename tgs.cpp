@@ -19,6 +19,7 @@ using namespace cds_static;
 uint buffer1[BUFFER];
 uint buffer3[BUFFER];
 size_t buffer2[2*BUFFER];
+uint buffer4[BUFFER];
 
 void tgs_save(struct tgs *a, ofstream & f) {
 	f.write(reinterpret_cast<char *>(a), sizeof(struct tgs));
@@ -643,3 +644,137 @@ void get_reverse_interval_slow(uint *res, struct tgs *g, uint node, uint ts, uin
 	//free(buffer);
 }
 */
+
+size_t get_change_node(struct tgs *g, uint node, uint timestart, uint timeend) {
+    uint startnode, endnode;
+    uint i, j;
+    uint pos_stime, pos_etime;
+
+
+    startnode = start(g->map, node);
+    endnode = start(g->map, node + 1);
+
+    pos_stime = g->log->next_value_pos(g->nodes + timestart + 1, startnode, endnode);
+    if (pos_stime > endnode) {
+        pos_stime = endnode;
+    }
+
+    pos_etime = g->log->next_value_pos(g->nodes + timeend + 1, startnode, endnode);
+    if (pos_etime > endnode) {
+        pos_etime = endnode;
+    }
+
+    *buffer1 = 0;
+
+    ((MyWaveletMatrix *)g->log)->range_report<append_dummy>(pos_stime, pos_etime, 0, g->nodes , buffer1);
+
+    return (size_t)*buffer1;
+}
+
+
+size_t get_change_interval(struct tgs *g, uint ts, uint te) {
+    size_t edges = 0;
+    uint node;
+    for (node = 0; node < g->nodes; node++) {
+        edges += get_change_node(g,node,ts-1,te-1);
+    }
+
+    return edges;
+}
+
+size_t get_change_point(struct tgs *g, uint t) {
+    return get_change_interval(g,t,t+1);
+}
+
+
+
+size_t get_actived_node(struct tgs *g, uint node, uint timestart, uint timeend) {
+    uint startnode, endnode;
+    uint i, j;
+    uint pos_stime, pos_etime;
+
+
+    startnode = start(g->map, node);
+    endnode = start(g->map, node + 1);
+
+    pos_stime = g->log->next_value_pos(g->nodes + timestart + 1, startnode, endnode);
+    if (pos_stime > endnode) {
+        pos_stime = endnode;
+    }
+
+    pos_etime = g->log->next_value_pos(g->nodes + timeend + 1, startnode, endnode);
+    if (pos_etime > endnode) {
+        pos_etime = endnode;
+    }
+
+    *buffer1 = 0;
+    ((MyWaveletMatrix *)g->log)->range_report<append_symbol>(pos_stime, pos_etime, 0, g->nodes , buffer1);
+
+
+    get_neighbors_point(buffer3, g, node, timestart);
+
+    diff_arraysort(buffer1, buffer3);
+
+    return (size_t)*buffer1;
+}
+
+
+size_t get_actived_interval(struct tgs *g, uint ts, uint te) {
+    size_t edges = 0;
+    uint node;
+    for (node = 0; node < g->nodes; node++) {
+        edges += get_actived_node(g,node,ts-1,te-1);
+    }
+
+    return edges;
+}
+
+size_t get_actived_point(struct tgs *g, uint t) {
+    return get_actived_interval(g,t,t+1);
+}
+
+size_t get_deactived_node(struct tgs *g, uint node, uint timestart, uint timeend) {
+    uint startnode, endnode;
+    uint i, j;
+    uint pos_stime, pos_etime;
+
+
+    startnode = start(g->map, node);
+    endnode = start(g->map, node + 1);
+
+    pos_stime = g->log->next_value_pos(g->nodes + timestart + 1, startnode, endnode);
+    if (pos_stime > endnode) {
+        pos_stime = endnode;
+    }
+
+    pos_etime = g->log->next_value_pos(g->nodes + timeend + 1, startnode, endnode);
+    if (pos_etime > endnode) {
+        pos_etime = endnode;
+    }
+
+    *buffer1 = 0;
+
+    ((MyWaveletMatrix *)g->log)->range_report<append_symbol>(pos_stime, pos_etime, 0, g->nodes , buffer1);
+
+
+    get_neighbors_point(buffer3, g, node, timestart);
+
+    intersection_arraysort(buffer4, buffer1, buffer3);
+
+    return (size_t)*buffer4;
+}
+
+
+size_t get_deactived_interval(struct tgs *g, uint ts, uint te) {
+    size_t edges = 0;
+    uint node;
+    for (node = 0; node < g->nodes; node++) {
+        edges += get_deactived_node(g,node,ts-1,te-1);
+    }
+
+    return edges;
+}
+
+size_t get_deactived_point(struct tgs *g, uint t) {
+    return get_deactived_interval(g,t,t+1);
+}

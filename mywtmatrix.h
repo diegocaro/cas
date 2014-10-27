@@ -17,6 +17,11 @@ inline void append_symbol(uint symbol, uint freq, uint *res) {
   *res += 1; res[*res] = symbol;
 }
 
+
+inline void append_dummy(uint symbol, uint freq, uint *res) {
+  *res += 1;
+}
+
 typedef void (*action)(uint, uint, uint*);
 
 class MyWaveletMatrix : public WaveletMatrix {
@@ -32,7 +37,6 @@ protected:
 
 	template<action F>
 	void _range_report(size_t start, size_t end, uint lowvoc, uint uppvoc, uint vocmin, uint vocmax, uint level,  uint *res);
-
 };
 
 

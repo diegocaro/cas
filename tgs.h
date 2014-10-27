@@ -63,5 +63,16 @@ int get_edge_next(struct tgs *g, uint u, uint v, uint t);
 
 int get_edge_interval(struct tgs *g, uint u, uint v, uint tstart, uint tend, uint semantic);
 
+size_t get_change_node(struct tgs *g, uint n, uint ts, uint te);
+size_t get_change_point(struct tgs *g, uint t);
+size_t get_change_interval(struct tgs *g, uint ts, uint te);
+
+size_t get_actived_node(struct tgs *g, uint n, uint ts, uint te);
+size_t get_actived_point(struct tgs *g, uint t);
+size_t get_actived_interval(struct tgs *g, uint ts, uint te);
+
+size_t get_deactived_node(struct tgs *g, uint n, uint ts, uint te);
+size_t get_deactived_point(struct tgs *g, uint t);
+size_t get_deactived_interval(struct tgs *g, uint ts, uint te);
 
 #endif /* TGS_H_ */

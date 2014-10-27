@@ -38,6 +38,13 @@ pode haber repetidos)
 #define REVERSE_NEIGHBORS_WEAK 4
 #define REVERSE_NEIGHBORS_STRONG 5
 
+#define CHANGE_POINT 11
+#define CHANGE_INTERVAL 12
+#define ACTIVED_POINT 13
+#define ACTIVED_INTERVAL 14
+#define DEACTIVED_POINT 15
+#define DEACTIVED_INTERVAL 16
+
 #define ISIZE 5
 
 int compareRes(unsigned int * l1, unsigned int * l2) {
@@ -91,14 +98,20 @@ TimeQuery * readQueries(char * filename, int * nqueries) {
                                 res = fscanf(queryFile, "%d %d %d\n", &query->row, &query->initime, &query->endtime);
                                 break;
                         }
-                        case SNAPSHOT: {
-				//the number of active edges at time t
-                                res = fscanf(queryFile, "%d\n", &query->time); 
-                                break;
-                        }
+                        case SNAPSHOT: case CHANGE_POINT: case ACTIVED_POINT: case DEACTIVED_POINT: {
+                            res = fscanf(queryFile, "%d\n", &query->time);
+                            break;
+                    }
+
+                    case CHANGE_INTERVAL: case ACTIVED_INTERVAL: case DEACTIVED_INTERVAL: {
+                            res = fscanf(queryFile, "%d %d\n", &query->initime, &query->endtime);
+                            break;
+                    }
                 }
 
-                if(query->type  == EDGE || query->type  == EDGE_NEXT ||query->type == EDGE_STRONG || query->type == EDGE_WEAK || query->type == SNAPSHOT)
+                if(query->type  == EDGE || query->type  == EDGE_NEXT ||query->type == EDGE_STRONG || query->type == EDGE_WEAK || query->type == SNAPSHOT ||
+                        query->type == CHANGE_POINT || query->type == CHANGE_INTERVAL || query->type == ACTIVED_POINT || query->type == ACTIVED_INTERVAL ||
+                        query->type == DEACTIVED_POINT || query->type == DEACTIVED_INTERVAL)
                         res = fscanf(queryFile, "%d\n", &query->expectednres);
                 else {
                         res = fscanf(queryFile, "%d", &query->expectednres);
@@ -230,6 +243,41 @@ int main(int argc, char ** argv) {
 //                      gotres = findRange(tree, 0, tree->nNodesReal, 0, tree->nNodesReal, time)[0][0];
 			break;
 		}
+
+
+
+        case CHANGE_POINT: {
+            gotres = get_change_point(&index, query.time);
+            *gotreslist = gotres;
+            break;
+        }
+        case CHANGE_INTERVAL: {
+            gotres = get_change_interval(&index, query.initime, query.endtime);
+            *gotreslist = gotres;
+            break;
+        }
+        case ACTIVED_POINT: {
+            gotres = get_actived_point(&index, query.time);
+            *gotreslist = gotres;
+            break;
+        }
+        case ACTIVED_INTERVAL: {
+            gotres = get_actived_interval(&index, query.initime, query.endtime);
+            *gotreslist = gotres;
+            break;
+        }
+        case DEACTIVED_POINT: {
+            gotres = get_deactived_point(&index, query.time);
+            *gotreslist = gotres;
+            break;
+        }
+        case DEACTIVED_INTERVAL: {
+            gotres = get_deactived_interval(&index, query.initime, query.endtime);
+            *gotreslist = gotres;
+            break;
+        }
+
+
                 }
 
 #ifndef EXPERIMENTS
@@ -256,12 +304,14 @@ int main(int argc, char ** argv) {
                       fprintf(gotFile, "%d %d %d\n", query.row, query.initime, query.endtime);
                       break;
                     }
-		    case SNAPSHOT:
+		    case SNAPSHOT:case CHANGE_POINT: case ACTIVED_POINT: case DEACTIVED_POINT:
 		      fprintf(gotFile, "%d\n", query.time);
 		    break;
                     }
 
-                    if (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT) {
+                    if (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT ||
+                            query.type == CHANGE_POINT || query.type == CHANGE_INTERVAL || query.type == ACTIVED_POINT || query.type == ACTIVED_INTERVAL ||
+                            query.type == DEACTIVED_POINT || query.type == DEACTIVED_INTERVAL) {
                       fprintf(gotFile,"%d\n", gotres);
                     } else {
                       uint j;
@@ -277,7 +327,9 @@ int main(int argc, char ** argv) {
 
 
                   int failcompare = 0;
-                  if (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT) {
+                  if (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT||
+                          query.type == CHANGE_POINT || query.type == CHANGE_INTERVAL || query.type == ACTIVED_POINT || query.type == ACTIVED_INTERVAL ||
+                          query.type == DEACTIVED_POINT || query.type == DEACTIVED_INTERVAL) {
                     failcompare = (gotres != query.expectednres);
                   } else {
                     failcompare = compareRes(gotreslist, query.expectedres);
@@ -287,7 +339,9 @@ int main(int argc, char ** argv) {
                     printf("query queryType=%d, row=%d, column=%d, time=%d, initime=%d, endtime=%d, expectedres=%d\n", query.type, query.row, query.column, query.time, query.initime, query.endtime, query.expectednres);
                     printf("count: got %d expected %d\n", gotres, query.expectednres);
                     
-		    if ( ! (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT)) {
+		    if ( ! (query.type == EDGE || query.type == EDGE_NEXT || query.type == EDGE_WEAK || query.type == EDGE_STRONG || query.type == SNAPSHOT||
+                    query.type == CHANGE_POINT || query.type == CHANGE_INTERVAL || query.type == ACTIVED_POINT || query.type == ACTIVED_INTERVAL ||
+                    query.type == DEACTIVED_POINT || query.type == DEACTIVED_INTERVAL) ) {
 		        printf("expected: "); print_arraysort(query.expectedres);
                         printf("got     : "); print_arraysort(gotreslist);
 	    	    }
