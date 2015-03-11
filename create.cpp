@@ -298,7 +298,7 @@ void readcontacts(struct opts &opts, struct adjlog *adjlog) {
 
 	uint c_read = 0;
 
-	pair<btree_set::iterator, bool> info;
+	pair<btree_set<Change>::iterator, bool> info;
 
 	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
 		c_read++;
