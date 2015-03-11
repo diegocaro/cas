@@ -297,12 +297,21 @@ void readcontacts(struct opts &opts, struct adjlog *adjlog) {
 	Change k;
 
 	uint c_read = 0;
+
+	pair<btree_set::iterator, bool> info;
+
 	while( EOF != scanf("%u %u %u %u", &u, &v, &a, &b)) {
 		c_read++;
 		if(c_read%500000==0) fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
 
 		k.u = u; k.v = v; k.t = a;
-		btable.insert(k);
+		info = btable.insert(k);
+
+		// por si el datasets tiene intervalos de la forma I1 = [a,b) I2 = [b, c)
+		// Guardamos solo el intervalo [a,c) ... (solo pasa si est‡ corrupto el dataset)
+		if (info.second == false) {
+		    btable.erase(info.first);
+		}
 		
 		//btable[u][a].insert(v);
 		
@@ -311,8 +320,11 @@ void readcontacts(struct opts &opts, struct adjlog *adjlog) {
 		}
 
 		k.t = b;
-		btable.insert(k);
-		
+		info = btable.insert(k);
+		if (info.second == false) {
+            btable.erase(info.first);
+        }
+
 		//btable[u][b].insert(v);
 	}
 	fprintf(stderr, "Processing %.1f%%\r", (float)c_read/contacts*100);
