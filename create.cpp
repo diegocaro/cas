@@ -57,9 +57,7 @@ enum bitseq {
 	RG, R3, SD
 };
 
-enum TypeGraph {
-	kInterval, kGrowth, kPoint
-};
+
 
 struct opts {
 	enum bitseq bs; //bits for wavelet tree
@@ -315,9 +313,9 @@ void readcontacts(struct opts &opts, struct adjlog *adjlog) {
 		
 		//btable[u][a].insert(v);
 		
-		if ( opts.typegraph == kGrowth || opts.typegraph == kPoint) {
-			if (b == lifetime-1) continue;
-		}
+		if (opts.typegraph == kPoint) continue;
+
+		if ( opts.typegraph == kGrowth && b == lifetime-1) continue;
 
 		k.t = b;
 		info = btable.insert(k);
@@ -422,6 +420,7 @@ void create_index(struct tgs *tgs, struct adjlog *adjlog, struct opts *opts) {
 	tgs->nodes = adjlog->nodes;
 	tgs->changes = adjlog->changes;
 	tgs->maxtime = adjlog->maxtime;
+	tgs->typegraph = opts->typegraph;
 	
 	tgs->size_log = adjlog->size_log;
 	tgs->size_map = adjlog->size_map;

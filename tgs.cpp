@@ -130,6 +130,11 @@ uint get_snapshot(struct tgs *g, uint t) {
 }
 
 void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
+    if (g->typegraph == kPoint) {
+        get_neighbors_interval_pg(res, g, node, t,t+1);
+        return;
+    }
+
 	uint startnode, endnode, endnode_log;
 	//uint i, j;
   //printf("node: %u\n", node);
@@ -168,6 +173,9 @@ void get_neighbors_point(uint *res, struct tgs *g, uint node, uint t) {
 }
 
 int get_edge_point(struct tgs *g, uint node, uint v, uint t) {
+    if (g->typegraph == kPoint) {
+        return get_edge_interval_pg(g, node,v, t,t+1);
+    }
 	uint startnode, endnode, endnode_log;
 
 	startnode = start(g->map, node);
@@ -195,9 +203,19 @@ int get_edge_point(struct tgs *g, uint node, uint v, uint t) {
 }
 
 int get_edge_weak(struct tgs *g, uint u, uint v, uint tstart, uint tend) {
+    if (g->typegraph == kPoint) {
+           return get_edge_interval_pg(g, u,v, tstart,tend);
+       }
         return get_edge_interval(g, u, v, tstart, tend, 0);
 }
 int get_edge_strong(struct tgs *g, uint u, uint v, uint tstart, uint tend) {
+    if (g->typegraph == kPoint) {
+        if (tend == tstart+1) {
+           return get_edge_interval_pg(g, u,v, tstart,tend);
+        }
+        return 0;
+       }
+
         return get_edge_interval(g, u, v, tstart, tend, 1);        
 }
 
@@ -243,6 +261,10 @@ int get_edge_interval(struct tgs *g, uint node, uint v, uint timestart, uint tim
         return 0;
 }
 int get_edge_next(struct tgs *g, uint node, uint v, uint t) {
+    if (g->typegraph == kPoint) {
+      return get_edge_next_pg(g, node,v, t);
+      }
+
 	uint startnode, endnode, endnode_log;
 
 	startnode = start(g->map, node);
@@ -279,10 +301,21 @@ int get_edge_next(struct tgs *g, uint node, uint v, uint t) {
 
 
 void get_neighbors_weak(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
+    if (g->typegraph == kPoint) {
+        get_neighbors_interval_pg(res, g, node, timestart,timeend);
+        return;
+    }
+
 	return get_neighbors_interval(res, g, node, timestart, timeend, 0);
 }
 
 void get_neighbors_strong(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
+    if (g->typegraph == kPoint) {
+        if (timestart+1 == timeend) {
+            get_neighbors_interval_pg(res,g,node,timestart,timeend);
+        }
+        return;
+    }
 	return get_neighbors_interval(res, g, node, timestart, timeend, 1);
 }
 
@@ -344,6 +377,11 @@ void get_neighbors_interval(uint *res, struct tgs *g, uint node, uint timestart,
 
 
 void get_reverse_point(uint *res, struct tgs *g, uint node, uint time) {
+    if (g->typegraph == kPoint) {
+        get_reverse_interval_pg(res, g, node, time,time+1);
+        return;
+    }
+
 	uint curr_node;
 	size_t i, j;
 	size_t cant, cpos;
@@ -456,10 +494,20 @@ void get_reverse_point_slow(uint *res, struct tgs *g, uint node, uint time) {
 */
 
 void get_reverse_weak(uint *res, struct tgs *g, uint node, uint ts, uint te) {
+    if (g->typegraph == kPoint) {
+        get_reverse_interval_pg(res, g, node, ts,te);
+        return;
+    }
 	return get_reverse_interval(res, g, node, ts, te, 0);
 }
 
 void get_reverse_strong(uint *res, struct tgs *g, uint node, uint ts, uint te) {
+    if (g->typegraph == kPoint) {
+        if (te == ts+1) {
+            get_reverse_interval_pg(res,g,node,ts,te);
+        }
+        return;
+    }
 	return get_reverse_interval(res, g, node, ts, te, 1);
 }
 
@@ -720,6 +768,10 @@ size_t get_actived_node(struct tgs *g, uint node, uint timestart, uint timeend) 
 
 
 size_t get_actived_interval(struct tgs *g, uint ts, uint te) {
+    if (g->typegraph == kPoint) {
+        return get_actived_interval_pg(g,ts,te);
+    }
+
     size_t edges = 0;
     uint node;
     for (node = 0; node < g->nodes; node++) {
@@ -766,6 +818,10 @@ size_t get_deactived_node(struct tgs *g, uint node, uint timestart, uint timeend
 
 
 size_t get_deactived_interval(struct tgs *g, uint ts, uint te) {
+    if (g->typegraph == kPoint) {
+        return get_deactived_interval_pg(g,ts,te);
+    }
+
     size_t edges = 0;
     uint node;
     for (node = 0; node < g->nodes; node++) {
@@ -778,3 +834,201 @@ size_t get_deactived_interval(struct tgs *g, uint ts, uint te) {
 size_t get_deactived_point(struct tgs *g, uint t) {
     return get_deactived_interval(g,t,t+1);
 }
+
+
+
+
+// point contact graphs
+void get_reverse_interval_pg(uint *res, struct tgs *g, uint node, uint ts, uint te) {
+    uint last_node, curr_node;
+    size_t i, j;
+    size_t cstart, cts, cte;
+    size_t startnode, endnode, pos_stime, pos_etime;
+    //uint *buffer;
+    size_t nextnode;
+    size_t *p;
+
+ // vector<uint> buffer;
+
+    //buffer = malloc(sizeof(uint)*BUFFER);
+
+    //*buffer = 0;
+
+    ((MyWaveletMatrix *)g->log)->select_all(node, buffer2);
+
+    last_node = UINT_MAX;
+
+    j = 0;
+
+    for (i = 1; i <= *buffer2; i++) {
+        curr_node = belong(g->map, buffer2[i]);
+
+        startnode = start(g->map, curr_node);
+        nextnode = start(g->map, curr_node + 1);
+
+        endnode = nextnode;
+
+        pos_stime = g->log->next_value_pos(g->nodes + ts , startnode, endnode);
+        if (pos_stime > endnode) {
+            pos_stime = endnode;
+        }
+
+        pos_etime = g->log->next_value_pos(g->nodes + te , startnode, endnode);
+        if (pos_etime > endnode) {
+            pos_etime = endnode;
+        }
+
+   // printf("startnode: %u\nendnode: %u\n", startnode, endnode);
+    //printf("pos_stime: %u\npos_etime: %u\n", pos_stime, pos_etime);
+
+#ifdef DEBUG
+        printf("startnode: %u\nendnode: %u\n", startnode, endnode);
+#endif
+        //cstart = rank_wt(g->log, node, startnode);
+        cstart = i;
+        //printf("rankwt: %u\n", g->log->rank(node, startnode));
+        //printf("cstart: %u\n", cstart);
+
+
+
+        //cts = rank_wt(g->log, node, pos_stime);
+        // or
+        //while(i <= *buffer2 && buffer2[i] < pos_stime ) {
+        //          i++;
+        //}
+        //but better a binary search
+        p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], pos_stime);
+                i = p - &buffer2[0];
+        cts = i;
+
+    //printf("rankwt: %u\n", g->log->rank(node, pos_stime));
+    //printf("cts: %u\n", cts);
+
+
+        //cte = rank_wt(g->log, node, pos_etime);
+        // or
+        //while(i <= *buffer2 && buffer2[i] < pos_etime ) {
+        //  i++;
+        //}
+        // but better a binary search
+        p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], pos_etime);
+                i = p - &buffer2[0];
+        cte = i;
+
+    //printf("rankwt: %u\n", g->log->rank(node, pos_etime));
+    //printf("cte: %u\n", cte);
+
+
+
+            if ( cte > cts) {
+                res[++j] = curr_node;
+            }
+
+        //while(i <= *buffer2 && buffer2[i] < nextnode) {
+        //  i++;
+        //}
+
+        p = lower_bound(&buffer2[i], &buffer2[*buffer2+1], nextnode);
+                i = p - &buffer2[0];
+        i--;
+
+
+    }
+    *res = j;
+
+    //free(buffer);
+}
+
+void get_neighbors_interval_pg(uint *res, struct tgs *g, uint node, uint timestart, uint timeend) {
+    uint startnode, endnode;
+    uint i, j;
+    uint pos_stime, pos_etime;
+
+    startnode = start(g->map, node);
+    endnode = start(g->map, node + 1);
+
+    pos_stime = g->log->next_value_pos(g->nodes + timestart , startnode, endnode);
+    if (pos_stime > endnode) {
+        pos_stime = endnode;
+    }
+
+    pos_etime = g->log->next_value_pos(g->nodes + timeend , startnode, endnode);
+    if (pos_etime > endnode) {
+        pos_etime = endnode;
+    }
+
+    ((MyWaveletMatrix *)g->log)->range_report<append_symbol>(pos_stime, pos_etime, 0, g->nodes , res);
+}
+
+int get_edge_interval_pg(struct tgs *g, uint node, uint v, uint timestart, uint timeend) {
+    uint startnode, endnode;
+
+    uint pos_stime, pos_etime;
+    uint *buffer;
+
+    buffer = (uint *)malloc(sizeof(uint)*BUFFER);
+
+    startnode = start(g->map, node);
+    endnode = start(g->map, node + 1);
+
+    pos_stime = g->log->next_value_pos(g->nodes + timestart , startnode, endnode);
+    if (pos_stime > endnode) {
+        pos_stime = endnode;
+    }
+
+    pos_etime = g->log->next_value_pos(g->nodes + timeend , startnode, endnode);
+    if (pos_etime > endnode) {
+        pos_etime = endnode;
+    }
+        uint ris, rie;
+
+    ris = g->log->rank(v, pos_stime);
+        rie = g->log->rank(v, pos_etime);
+
+        uint r = rie - ris;
+
+       if(r>0) return 1;
+            return 0;
+
+}
+int get_edge_next_pg(struct tgs *g, uint node, uint v, uint t) {
+    uint startnode, endnode, endnode_log;
+
+    startnode = start(g->map, node);
+    endnode = start(g->map, node + 1);
+//  printf("startnode: %u\n", startnode);
+//  printf("endnode: %u\n", endnode);
+
+    endnode_log = g->log->next_value_pos( g->nodes + t + 1, startnode, endnode);
+
+//  printf("endnode_log: %u\n", endnode_log);
+
+
+    if (endnode_log < endnode) {
+        endnode = endnode_log;
+    }
+
+        uint rs, re;
+        rs = g->log->rank(v, startnode);
+        re = g->log->rank(v, endnode);
+    uint r = re - rs;
+        if ( r > 1 ) return t;
+
+        uint c;
+        c = g->log->select(v, re+1);
+
+        if (c < endnode) {
+                return g->log->prev_value(g->nodes + g->maxtime, startnode, c);
+        }
+
+
+        return -1;
+}
+
+size_t get_actived_interval_pg(struct tgs *g, uint ts, uint te) {
+return get_change_interval(g,ts,te);
+}
+size_t get_deactived_interval_pg(struct tgs *g, uint ts, uint te) {
+return get_change_interval(g,ts-1,te-1);
+}
+

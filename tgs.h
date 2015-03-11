@@ -17,6 +17,11 @@ using namespace cds_static;
 
 #define BUFFER 1024*1024*10
 
+enum TypeGraph {
+    kInterval, kGrowth, kPoint
+};
+
+
 struct tgs {
 	uint size_log;
 	uint size_map;
@@ -25,7 +30,7 @@ struct tgs {
 	uint maxtime;
 	WaveletMatrix *log;
 	BitSequence *map;
-
+	TypeGraph typegraph;
 };
 
 
@@ -74,5 +79,20 @@ size_t get_actived_interval(struct tgs *g, uint ts, uint te);
 size_t get_deactived_node(struct tgs *g, uint n, uint ts, uint te);
 size_t get_deactived_point(struct tgs *g, uint t);
 size_t get_deactived_interval(struct tgs *g, uint ts, uint te);
+
+
+
+
+// point contact graphs
+void get_reverse_interval_pg(uint *res, struct tgs *g, uint node, uint ts, uint te);
+void get_neighbors_interval_pg(uint *res, struct tgs *g, uint node, uint timestart, uint timeend);
+int get_edge_interval_pg(struct tgs *g, uint u, uint v, uint tstart, uint tend);
+int get_edge_next_pg(struct tgs *g, uint u, uint v, uint t);
+
+//size_t snapshot_pg(uint t); // already captured by get_neighbors_interval_pg
+
+size_t get_actived_interval_pg(struct tgs *g, uint ts, uint te);
+size_t get_deactived_interval_pg(struct tgs *g, uint ts, uint te);
+
 
 #endif /* TGS_H_ */
