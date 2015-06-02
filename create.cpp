@@ -349,7 +349,7 @@ void readcontacts(struct opts &opts, struct adjlog *adjlog) {
 	
 	for(uint i = 0; i < nodes; i++) {
 		fprintf(stderr,"%f%%\r", (float)i/nodes*100);
-		bitset(B, i+p);
+		cds_utils::bitset(B, i+p);
 		
 		vlow.u = i;
 		vlow.v = 0;
