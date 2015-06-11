@@ -72,7 +72,6 @@ int main(int argc, char ** argv) {
 	}
 
 	struct tgs index;
-	f.open(fileNameIndex, ios::binary);
 	tgs_load(&index, f);
 	f.close();
 
