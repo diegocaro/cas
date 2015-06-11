@@ -1,4 +1,4 @@
-DEPEN_LIBCDS_INC=../libcds/includes/
+DEPEN_LIBCDS_INC=../libcds/include/
 DEPEN_LIBCDS=../libcds/libcds.a
 
 #CC=g++
@@ -21,10 +21,10 @@ EXT=
 SOURCES=tgs.cpp arraysort.cpp mywtmatrix.cpp
 OBJECTS=$(SOURCES:.cpp=.o)
 
-MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp exp-query.cpp
+MAINSRC=use.cpp create.cpp benchmark.cpp getsize.cpp exp-query.cpp vertices.cpp
 MAINOBJ=$(MAINSRC:.cpp=.o)
 
-EXECUTABLE=create use benchmark getsize exp-query
+EXECUTABLE=create use benchmark getsize exp-query vertices
 
 #all: CFLAGS += -O9
 all: $(SOURCES) $(MAINSRC) $(MAINOBJ) $(OBJECTS) $(EXECUTABLE) 
@@ -62,4 +62,7 @@ getsize: getsize.o
 	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
 
 exp-query: exp-query.o
+	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
+
+vertices: vertices.o
 	$(CXX) $(OBJECTS) $(DEPENOBJS) $< -o $@$(EXT) $(LDFLAGS)
