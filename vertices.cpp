@@ -2,6 +2,9 @@
 #include <time.h>
 #include <stdlib.h>
 
+#include <random>       // std::default_random_engine
+#include <chrono>       // std::chrono::system_clock
+
 #include "tgs.h"
 #include "timing.h"
 #include "debug.h"
@@ -78,12 +81,24 @@ int main(int argc, char ** argv) {
 	gotreslist = (uint*) malloc(sizeof(unsigned int) * BUFFER);
 
 	unsigned vertices = index.nodes;
-	for (unsigned v = 0; v <vertices; v++) {
+    
+	// For testing, we profer to query a random permutation of vertices
+	vector<unsigned> vrand(vertices,0);
+	for(unsigned i=0; i < vertices; i++) {
+		vrand[i] = i;
+	}
+	unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
+	shuffle (vrand.begin(), vrand.end(), std::default_random_engine(seed));
+	
+	unsigned v;
+	for (auto it = vrand.begin(); it != vrand.end(); ++it) {
 		if (v % 1000 == 0)
 			fprintf(stderr, "Progress: %.2f%%\r",
 					(float) v / vertices * 100.0);
 
 		*gotreslist = 0;
+		
+		v = *it;
 		startClockTime();
 
 		switch (typeQuery) {
